@@ -9,6 +9,8 @@ All notable changes are recorded here. The format follows [Keep a Changelog](htt
 
 ## [0.1.0] - 2026-09-04
 
+First public release.
+
 Phase 1: the complete assurance core in Python. See `docs/adr/0002-phased-delivery.md`.
 
 ### Added
