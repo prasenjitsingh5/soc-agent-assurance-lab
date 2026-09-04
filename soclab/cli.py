@@ -30,7 +30,7 @@ from soclab.policy import (
 )
 from soclab.providers.registry import ProviderRegistry
 from soclab.reports import ReportAudience, ReportGenerator
-from soclab.scoring import score_campaign
+from soclab.scoring import AssuranceResult, CampaignResult, score_campaign
 from soclab.simulator import SimulatorState
 
 app = typer.Typer(help="SOC Agent Assurance Lab", no_args_is_help=True)
@@ -235,11 +235,8 @@ def verify_chain(
 
 
 def _write_reports(
-    repository: EvidenceRepository, result: object, assurance: object, out: Path, mode: str
+    repository: EvidenceRepository, result: CampaignResult, assurance: AssuranceResult, out: Path, mode: str
 ) -> None:
-    from soclab.scoring import AssuranceResult, CampaignResult
-
-    assert isinstance(result, CampaignResult) and isinstance(assurance, AssuranceResult)  # noqa: S101
     generator = ReportGenerator(repository)
     out.mkdir(parents=True, exist_ok=True)
     for audience in ReportAudience:
