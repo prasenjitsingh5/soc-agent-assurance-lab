@@ -17,7 +17,9 @@ from __future__ import annotations
 import json
 import os
 import shutil
-import subprocess  # noqa: S404  # nosec B404 - running the pinned opa binary is the purpose of this module
+
+# Running the pinned opa binary is the purpose of this module.
+import subprocess  # noqa: S404  # nosec B404
 import tempfile
 from pathlib import Path
 from typing import Any, Protocol
@@ -218,7 +220,8 @@ class OpaExecPolicyEngine:
             json.dump(document, handle)
             input_path = Path(handle.name)
         try:
-            completed = subprocess.run(  # noqa: S603  # nosec B603 - fixed binary and arguments, no shell
+            # Fixed binary path and argument list, no shell, no user-controlled strings.
+            completed = subprocess.run(  # noqa: S603  # nosec B603
                 [
                     str(self._binary),
                     "eval",
