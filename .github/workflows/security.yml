@@ -27,7 +27,7 @@ jobs:
       - name: Install
         run: uv sync --locked --extra dev --extra security --extra providers
       - name: Secret scan across history
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@v3.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Static analysis
@@ -47,7 +47,7 @@ jobs:
       - name: Build image
         run: docker build -f infrastructure/docker/api.Dockerfile -t soclab/api:scan .
       - name: Container scan
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: soclab/api:scan
           format: table
