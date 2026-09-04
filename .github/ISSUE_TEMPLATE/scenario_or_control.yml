@@ -1,0 +1,22 @@
+name: Attack scenario or control proposal
+description: Propose a new adversarial scenario or a new control
+labels: [enhancement]
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind
+      options: [attack scenario, control, scoring change, provider adapter]
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: For a scenario, where does the untrusted payload enter and what is the forbidden result? For a control, which attack class does it stop and where does it live in the pipeline?
+    validations:
+      required: true
+  - type: textarea
+    id: oracle
+    attributes:
+      label: How would success or failure be measured?
