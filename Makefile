@@ -10,7 +10,7 @@ COMPOSE := docker compose -f infrastructure/docker/docker-compose.yml
 .PHONY: bootstrap lint format typecheck test test-fast policy-test security sbom up down demo verify
 
 bootstrap:
-	$(UV) sync --extra dev --extra security
+	$(UV) sync --extra dev --extra security --extra providers
 
 lint:
 	$(RUN) ruff check .
