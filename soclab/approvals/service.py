@@ -51,13 +51,15 @@ class ApprovalService:
         *,
         now: datetime | None = None,
     ) -> ApprovalRecord:
-        pending = self.pending.pop(approval_id, None)
+        pending = self.pending.get(approval_id)
         if pending is None:
             msg = f"no pending approval {approval_id}"
             raise KeyError(msg)
-        if approver_id == pending.proposal.delegated_user_id or approver_id == pending.proposal.agent_id:
+        if approver_id in {pending.proposal.delegated_user_id, pending.proposal.agent_id}:
+            # A refused attempt must not consume the request; a legitimate approver can still decide it.
             msg = "the requesting identity cannot approve its own action"
             raise PermissionError(msg)
+        del self.pending[approval_id]
         moment = now or datetime.now(tz=UTC)
         record = ApprovalRecord(
             approval_id=approval_id,
