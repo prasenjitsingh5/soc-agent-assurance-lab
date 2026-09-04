@@ -53,6 +53,9 @@ soclab = "soclab.cli:app"
 [tool.setuptools.packages.find]
 include = ["soclab*"]
 
+[tool.setuptools.package-data]
+soclab = ["simulator/fixtures/*.json", "reports/templates/*.j2"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
