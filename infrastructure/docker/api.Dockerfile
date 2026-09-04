@@ -17,7 +17,7 @@ WORKDIR /app
 COPY --from=build --chown=soclab:soclab /app/.venv /app/.venv
 COPY --from=build --chown=soclab:soclab /app/policies /app/policies
 COPY --from=build --chown=soclab:soclab /app/scenarios /app/scenarios
-ENV PATH="/app/.venv/bin:$PATH" PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+ENV PATH="/app/.venv/bin:$PATH" PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1     SOCLAB_SCENARIO_DIR=/app/scenarios SOCLAB_POLICY_DIR=/app/policies/rego
 RUN mkdir -p /app/runs && chown soclab:soclab /app/runs
 USER soclab
 EXPOSE 8000

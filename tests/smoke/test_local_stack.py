@@ -78,12 +78,16 @@ def test_stack_starts_runs_a_campaign_and_verifies_evidence() -> None:
                 time.sleep(2)
         else:
             pytest.fail("api did not become healthy")
+        listing = httpx.get("http://127.0.0.1:8000/api/v1/scenarios", timeout=10)
+        assert listing.status_code == 200, listing.text
         created = httpx.post(
             "http://127.0.0.1:8000/api/v1/campaigns",
             json={"mode": "protected", "scenario_ids": ["ATK-001", "ATK-005"]},
             timeout=120,
         )
-        assert created.status_code == 201, created.text
+        if created.status_code != 201:
+            logs = _compose(binary, "logs", "--no-color", "--tail", "60", "api", timeout=60)
+            pytest.fail("campaign failed: " + created.text + " --- api logs --- " + logs.stdout[-4000:])
         assurance = created.json()["assurance"]
         assert assurance["attack_success_rate"]["value"] == 0.0
         runs = httpx.get("http://127.0.0.1:8000/api/v1/runs", timeout=10).json()
