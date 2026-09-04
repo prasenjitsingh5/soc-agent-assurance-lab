@@ -20,6 +20,7 @@ from sqlalchemy import (
     select,
 )
 from sqlalchemy.engine import Engine
+from sqlalchemy.pool import StaticPool
 
 from soclab.evidence.hash_chain import GENESIS_HASH, compute_event_hash, payload_hash, verify_events
 from soclab.evidence.models import AuditEvent, ChainVerification, StoredAuditEvent
@@ -51,7 +52,15 @@ class EvidenceRepository:
     """
 
     def __init__(self, url: str = "sqlite+pysqlite:///:memory:", *, engine: Engine | None = None) -> None:
-        self._engine = engine or create_engine(url, future=True)
+        if engine is None:
+            if ":memory:" in url:
+                # One shared connection so every thread (the API test client included) sees the same store.
+                engine = create_engine(
+                    url, future=True, poolclass=StaticPool, connect_args={"check_same_thread": False}
+                )
+            else:
+                engine = create_engine(url, future=True)
+        self._engine = engine
         metadata.create_all(self._engine)
 
     # ------------------------------------------------------------ writes

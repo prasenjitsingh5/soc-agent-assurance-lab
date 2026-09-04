@@ -245,6 +245,9 @@ def test_requester_cannot_approve_own_action() -> None:
     pending = approvals.request(proposal, ("x",))
     with pytest.raises(PermissionError):
         approvals.decide(pending.approval_id, "analyst-1", ApprovalDecision.APPROVED, "self")
+    # The refused attempt did not consume the request.
+    record = approvals.decide(pending.approval_id, "soc-lead", ApprovalDecision.APPROVED, "confirmed")
+    assert record.approver_id == "soc-lead"
     with pytest.raises(KeyError):
         approvals.decide(pending.approval_id, "soc-lead", ApprovalDecision.APPROVED, "gone")
 
