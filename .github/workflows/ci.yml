@@ -45,3 +45,9 @@ jobs:
         run: |
           uv run bandit -q -r soclab -c pyproject.toml
           uv run pip-audit --skip-editable
+      - name: Validate compose file
+        run: |
+          cp infrastructure/docker/postgres_password.example infrastructure/docker/postgres_password.local
+          docker compose -f infrastructure/docker/docker-compose.yml config --quiet
+      - name: Build API image
+        run: docker build -f infrastructure/docker/api.Dockerfile -t soclab/api:ci .

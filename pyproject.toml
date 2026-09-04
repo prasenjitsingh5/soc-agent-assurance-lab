@@ -43,6 +43,9 @@ providers = [
     "google-genai>=2.22.0",
     "openai>=3.8.0",
 ]
+docker = [
+    "psycopg[binary]>=3.3.5",
+]
 
 [project.scripts]
 soclab = "soclab.cli:app"
