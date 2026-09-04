@@ -1,4 +1,5 @@
 import json
+import sys
 from pathlib import Path
 
 import httpx
@@ -251,8 +252,13 @@ def test_exec_engine_requires_binary(monkeypatch: pytest.MonkeyPatch, tmp_path: 
 
 
 async def test_exec_engine_bad_binary_is_unavailable(tmp_path: Path) -> None:
-    fake = tmp_path / "opa.cmd"
-    fake.write_text("@echo off\r\nexit 3\r\n")
+    if sys.platform == "win32":
+        fake = tmp_path / "opa.cmd"
+        fake.write_text("@echo off\r\nexit 3\r\n")
+    else:
+        fake = tmp_path / "opa"
+        fake.write_text("#!/bin/sh\nexit 3\n")
+        fake.chmod(0o755)
     engine = OpaExecPolicyEngine(binary=fake)
     with pytest.raises(PolicyUnavailableError, match="exited 3"):
         await engine.decide(proposal(), context())
