@@ -76,8 +76,11 @@ def _remember(state: SimulatorState, key: str | None, receipt: dict[str, Any]) -
 # --------------------------------------------------------------------------- #
 # Read-only tools
 # --------------------------------------------------------------------------- #
-async def search_siem_events(state: SimulatorState, *, incident_id: str, query: str) -> dict[str, Any]:
+async def search_siem_events(
+    state: SimulatorState, *, incident_id: str, query: str, **_: Any
+) -> dict[str, Any]:
     state.assert_incident(incident_id)
+    state.access_log.append({"tool": "search_siem_events", "incident_id": incident_id, "query": query})
     terms = [t.strip().lower() for t in query.split() if t.strip()]
     hits = []
     for event in state.siem_events:
@@ -87,8 +90,11 @@ async def search_siem_events(state: SimulatorState, *, incident_id: str, query: 
     return {"query": query, "count": len(hits), "events": hits, "trust": "untrusted"}
 
 
-async def get_identity_profile(state: SimulatorState, *, incident_id: str, user_id: str) -> dict[str, Any]:
+async def get_identity_profile(
+    state: SimulatorState, *, incident_id: str, user_id: str, **_: Any
+) -> dict[str, Any]:
     state.assert_incident(incident_id)
+    state.access_log.append({"tool": "get_identity_profile", "incident_id": incident_id, "user_id": user_id})
     user = state.users.get(user_id)
     if user is None:
         raise UnknownResourceError(f"unknown user {user_id!r}")
@@ -96,9 +102,12 @@ async def get_identity_profile(state: SimulatorState, *, incident_id: str, user_
 
 
 async def get_authentication_history(
-    state: SimulatorState, *, incident_id: str, user_id: str, limit: int = 50
+    state: SimulatorState, *, incident_id: str, user_id: str, limit: int = 50, **_: Any
 ) -> dict[str, Any]:
     state.assert_incident(incident_id)
+    state.access_log.append(
+        {"tool": "get_authentication_history", "incident_id": incident_id, "user_id": user_id}
+    )
     if user_id not in state.users:
         raise UnknownResourceError(f"unknown user {user_id!r}")
     events = [e for e in state.authentication_events if e["user_id"] == user_id][: max(1, limit)]
@@ -111,16 +120,24 @@ async def get_authentication_history(
     }
 
 
-async def get_endpoint_status(state: SimulatorState, *, incident_id: str, endpoint_id: str) -> dict[str, Any]:
+async def get_endpoint_status(
+    state: SimulatorState, *, incident_id: str, endpoint_id: str, **_: Any
+) -> dict[str, Any]:
     state.assert_incident(incident_id)
+    state.access_log.append(
+        {"tool": "get_endpoint_status", "incident_id": incident_id, "endpoint_id": endpoint_id}
+    )
     endpoint = state.endpoints.get(endpoint_id)
     if endpoint is None:
         raise UnknownResourceError(f"unknown endpoint {endpoint_id!r}")
     return {**endpoint, "content_hash": _hash(endpoint), "trust": "untrusted"}
 
 
-async def lookup_indicator(state: SimulatorState, *, incident_id: str, indicator: str) -> dict[str, Any]:
+async def lookup_indicator(
+    state: SimulatorState, *, incident_id: str, indicator: str, **_: Any
+) -> dict[str, Any]:
     state.assert_incident(incident_id)
+    state.access_log.append({"tool": "lookup_indicator", "incident_id": incident_id, "indicator": indicator})
     record = state.indicators.get(indicator)
     if record is None:
         return {
@@ -137,7 +154,13 @@ async def lookup_indicator(state: SimulatorState, *, incident_id: str, indicator
 # State-changing tools
 # --------------------------------------------------------------------------- #
 async def create_incident(
-    state: SimulatorState, *, incident_id: str, title: str, severity: str, idempotency_key: str | None = None
+    state: SimulatorState,
+    *,
+    incident_id: str,
+    title: str,
+    severity: str,
+    idempotency_key: str | None = None,
+    **_: Any,
 ) -> dict[str, Any]:
     state.assert_incident(incident_id)
     if (cached := _idempotent(state, idempotency_key)) is not None:
@@ -160,7 +183,7 @@ async def create_incident(
 
 
 async def revoke_sessions(
-    state: SimulatorState, *, incident_id: str, user_id: str, idempotency_key: str | None = None
+    state: SimulatorState, *, incident_id: str, user_id: str, idempotency_key: str | None = None, **_: Any
 ) -> dict[str, Any]:
     state.assert_incident(incident_id)
     if user_id not in state.users:
@@ -176,7 +199,7 @@ async def revoke_sessions(
 
 
 async def disable_account(
-    state: SimulatorState, *, incident_id: str, user_id: str, idempotency_key: str | None = None
+    state: SimulatorState, *, incident_id: str, user_id: str, idempotency_key: str | None = None, **_: Any
 ) -> dict[str, Any]:
     state.assert_incident(incident_id)
     user = state.users.get(user_id)
@@ -191,7 +214,7 @@ async def disable_account(
 
 
 async def isolate_endpoint(
-    state: SimulatorState, *, incident_id: str, endpoint_id: str, idempotency_key: str | None = None
+    state: SimulatorState, *, incident_id: str, endpoint_id: str, idempotency_key: str | None = None, **_: Any
 ) -> dict[str, Any]:
     state.assert_incident(incident_id)
     endpoint = state.endpoints.get(endpoint_id)
@@ -206,7 +229,7 @@ async def isolate_endpoint(
 
 
 async def block_indicator(
-    state: SimulatorState, *, incident_id: str, indicator: str, idempotency_key: str | None = None
+    state: SimulatorState, *, incident_id: str, indicator: str, idempotency_key: str | None = None, **_: Any
 ) -> dict[str, Any]:
     state.assert_incident(incident_id)
     if (cached := _idempotent(state, idempotency_key)) is not None:
