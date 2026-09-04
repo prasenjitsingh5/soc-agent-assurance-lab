@@ -27,8 +27,9 @@ class SimulatorState:
     rule independently so the simulator is never the only control.
     """
 
-    def __init__(self, fixture: dict[str, Any]) -> None:
+    def __init__(self, fixture: dict[str, Any], *, enforce_scope: bool = True) -> None:
         self._fixture = copy.deepcopy(fixture)
+        self.enforce_scope = enforce_scope
         self.incident_id: str = self._fixture["incident"]["incident_id"]
         self.fixture_version: str = self._fixture["fixture_version"]
         self.users: dict[str, dict[str, Any]] = self._fixture["users"]
@@ -44,13 +45,15 @@ class SimulatorState:
         self.blocked_indicators: set[str] = set()
         self.incidents_created: list[dict[str, Any]] = []
         self.execution_log: list[dict[str, Any]] = []
+        self.access_log: list[dict[str, Any]] = []
 
     @classmethod
-    def from_fixture(cls, name: str = "identity_compromise") -> SimulatorState:
-        return cls(load_fixture(name))
+    def from_fixture(cls, name: str = "identity_compromise", *, enforce_scope: bool = True) -> SimulatorState:
+        return cls(load_fixture(name), enforce_scope=enforce_scope)
 
     def assert_incident(self, incident_id: str) -> None:
-        if incident_id != self.incident_id:
+        """Refuse calls for any other incident. Baseline mode disables this to model tools without tenancy."""
+        if self.enforce_scope and incident_id != self.incident_id:
             msg = f"incident {incident_id!r} is outside this simulator's scope ({self.incident_id!r})"
             raise PermissionError(msg)
 
@@ -64,6 +67,7 @@ class SimulatorState:
                 "blocked_indicators": sorted(self.blocked_indicators),
                 "incidents_created": self.incidents_created,
                 "execution_log": self.execution_log,
+                "access_log": self.access_log,
             }
         )
 
@@ -75,3 +79,4 @@ class SimulatorState:
         self.blocked_indicators = set(data["blocked_indicators"])
         self.incidents_created = data["incidents_created"]
         self.execution_log = data["execution_log"]
+        self.access_log = data.get("access_log", [])
