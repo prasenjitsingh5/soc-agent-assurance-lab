@@ -1,0 +1,21 @@
+{
+  "id": "chatcmpl-fixture-004",
+  "object": "chat.completion",
+  "created": 1756900003,
+  "model": "gpt-4o-mini",
+  "choices": [
+    {
+      "index": 0,
+      "finish_reason": "length",
+      "message": {
+        "role": "assistant",
+        "content": "{\"summary\": \"trunc"
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 400,
+    "completion_tokens": 1024,
+    "total_tokens": 1424
+  }
+}

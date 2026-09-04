@@ -1,0 +1,31 @@
+{
+  "id": "chatcmpl-fixture-002",
+  "object": "chat.completion",
+  "created": 1756900001,
+  "model": "gpt-4o-mini",
+  "choices": [
+    {
+      "index": 0,
+      "finish_reason": "tool_calls",
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_fixture",
+            "type": "function",
+            "function": {
+              "name": "lookup_indicator",
+              "arguments": "{\"indicator\": \"198.51.100.77\"}"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 420,
+    "completion_tokens": 19,
+    "total_tokens": 439
+  }
+}
