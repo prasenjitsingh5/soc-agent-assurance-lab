@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 # Lab API and CLI image. Non-root, read-only root filesystem friendly, no credentials baked in.
 
-FROM python:3.12.14-slim-bookworm AS build
+FROM python:3.14.7-slim-bookworm AS build
 COPY --from=ghcr.io/astral-sh/uv:0.12.9 /uv /usr/local/bin/uv
 WORKDIR /app
 ENV UV_LINK_MODE=copy UV_COMPILE_BYTECODE=1 UV_PYTHON_DOWNLOADS=never
@@ -11,7 +11,7 @@ COPY policies ./policies
 COPY scenarios ./scenarios
 RUN uv sync --locked --no-dev --no-editable --extra docker
 
-FROM python:3.12.14-slim-bookworm AS runtime
+FROM python:3.14.7-slim-bookworm AS runtime
 # Pull Debian security updates so the image does not ship known OS-level CVEs.
 RUN apt-get update && apt-get upgrade -y --no-install-recommends && rm -rf /var/lib/apt/lists/*
 RUN groupadd --system soclab && useradd --system --gid soclab --uid 10001 --home /app soclab
