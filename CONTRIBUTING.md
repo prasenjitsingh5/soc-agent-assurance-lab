@@ -4,6 +4,8 @@ Thank you for looking. This is a personal reference implementation with a narrow
 
 ## Ground rules
 
+The full set of standing rules is in [docs/engineering-standards.md](docs/engineering-standards.md). The ones that matter most:
+
 - **Synthetic only.** No real logs, records, credentials or personal data, ever. Fixtures use documentation address ranges and invented names.
 - **Simulated actions only.** Nothing may connect to a real SIEM, identity, endpoint or network system.
 - **The invariant holds.** The model proposes, the gateway normalizes, OPA decides, the executor acts. A change that lets a proposal skip any of those steps will not be merged.

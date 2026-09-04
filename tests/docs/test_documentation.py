@@ -23,6 +23,7 @@ REQUIRED_FILES = [
     ".github/PULL_REQUEST_TEMPLATE.md",
     ".github/ISSUE_TEMPLATE/bug_report.yml",
     "docs/architecture.md",
+    "docs/engineering-standards.md",
     "docs/threat-model.md",
     "docs/provider-compatibility.md",
     "docs/evaluation-methodology.md",

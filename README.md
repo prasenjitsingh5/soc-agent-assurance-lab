@@ -76,6 +76,7 @@ Labels follow [CONTRIBUTING.md](CONTRIBUTING.md): implemented, simulated, tested
 ## Documentation
 
 - [Architecture](docs/architecture.md) and [ADRs](docs/adr)
+- [Engineering standards](docs/engineering-standards.md)
 - [Threat model](docs/threat-model.md)
 - [Evaluation methodology](docs/evaluation-methodology.md)
 - [Policy guide](docs/policy-guide.md)
@@ -94,7 +95,7 @@ make security       # bandit, pip-audit
 make sbom           # CycloneDX bill of materials with checksum
 ```
 
-Every task is an issue, a branch and a pull request that CI must pass. See [CONTRIBUTING.md](CONTRIBUTING.md).
+Every task is an issue, a branch and a pull request that CI must pass. See [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/engineering-standards.md](docs/engineering-standards.md).
 
 ## Safety boundaries
 

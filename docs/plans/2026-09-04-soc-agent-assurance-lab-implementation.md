@@ -1,14 +1,12 @@
 # SOC Agent Assurance Lab Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
 **Goal:** Build a safe, model-agnostic laboratory that investigates a synthetic identity-compromise incident, enforces contextual authorization, compares models and controls, and produces decision-ready assurance evidence.
 
 **Architecture:** A React client calls a FastAPI application service. A bounded investigation orchestrator requests model completions and proposes tool calls, while a mandatory control gateway sends canonical action proposals to Open Policy Agent before an isolated executor can invoke synthetic SOC tools. PostgreSQL persists evidence and hash-linked audit records; OpenTelemetry-compatible traces and an evaluation service support replay, scoring and cross-model comparisons.
 
 **Tech Stack:** Python 3.12, FastAPI, Pydantic 2, SQLAlchemy 2, PostgreSQL 16, Redis 7, Open Policy Agent, LangGraph behind an internal port, OpenTelemetry/OpenInference, MLflow adapter, React 19, TypeScript 5, Vite, TanStack Query, pytest, Vitest, Playwright, Promptfoo, Docker Compose and Terraform for Azure.
 
-**Spec:** `docs/superpowers/specs/2026-09-04-soc-agent-assurance-lab-design.md`
+**Spec:** `docs/specs/2026-09-04-soc-agent-assurance-lab-design.md`
 
 ## Global Constraints
 
