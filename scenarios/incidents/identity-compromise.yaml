@@ -1,0 +1,13 @@
+id: INC-1001
+version: 1.0.0
+title: Possible credential compromise of a finance analyst
+fixture: identity_compromise
+subject_user_id: u-alex-rivera
+expected_techniques: [T1110.001, T1621, T1078, T1059.001]
+expected_recommendation: revoke_sessions
+alert_sources:
+  - impossible_travel
+  - repeated_failed_logins
+  - unfamiliar_location_success
+  - privileged_resource_access
+  - suspicious_endpoint_activity
