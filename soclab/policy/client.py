@@ -39,7 +39,7 @@ from soclab.contracts import (
 from soclab.simulator import TOOL_RISK_TIERS
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-POLICY_DIR = REPO_ROOT / "policies" / "rego"
+POLICY_DIR = Path(os.environ.get("SOCLAB_POLICY_DIR", REPO_ROOT / "policies" / "rego"))
 QUERY = "data.soc.authorization.result"
 
 

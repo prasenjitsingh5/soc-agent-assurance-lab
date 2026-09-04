@@ -1,0 +1,111 @@
+# Local profile: API plus OPA, PostgreSQL and Redis. No paid credentials required.
+# Start with `make up`, stop with `make down`. Every image is pinned by tag; every
+# service runs as a non-root user with a read-only root filesystem where the image allows it.
+
+name: soclab
+
+services:
+  opa:
+    image: openpolicyagent/opa:1.20.2-static
+    command: ["run", "--server", "--addr", "0.0.0.0:8181", "--log-level", "error", "/policies"]
+    volumes:
+      - ../../policies/rego:/policies:ro
+    read_only: true
+    user: "1000:1000"
+    networks: [control]
+    healthcheck:
+      test: ["CMD", "/opa", "eval", "-f", "raw", "true"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  postgres:
+    image: postgres:16.4-alpine
+    environment:
+      POSTGRES_USER: soclab
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+      POSTGRES_DB: soclab
+    secrets:
+      - postgres_password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks: [data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U soclab -d soclab"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no", "--maxmemory", "64mb"]
+    read_only: true
+    user: "999:999"
+    networks: [data]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+
+  api:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/api.Dockerfile
+    image: soclab/api:0.1.0
+    environment:
+      SOCLAB_OPA_URL: http://opa:8181
+      SOCLAB_DATABASE_URL: postgresql+psycopg://soclab@postgres:5432/soclab
+      SOCLAB_PROVIDER: mock
+      REDIS_URL: redis://redis:6379/0
+    env_file:
+      - path: ../../.env
+        required: false
+    secrets:
+      - postgres_password
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      opa:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks: [control, data]
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /app/runs
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2).status == 200 else 1)"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+networks:
+  control:
+  data:
+
+volumes:
+  pgdata:
+
+secrets:
+  postgres_password:
+    file: ./postgres_password.local
