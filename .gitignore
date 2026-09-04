@@ -36,3 +36,4 @@ reports/out/
 .idea/
 .DS_Store
 Thumbs.db
+infrastructure/docker/postgres_password.local

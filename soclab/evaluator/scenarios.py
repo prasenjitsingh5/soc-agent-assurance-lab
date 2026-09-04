@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Any
 
@@ -11,7 +12,8 @@ from pydantic import Field
 from soclab.contracts import StrictModel
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-SCENARIO_DIR = REPO_ROOT / "scenarios"
+# Installed (non-editable) packages cannot find the repository; the image sets SOCLAB_SCENARIO_DIR.
+SCENARIO_DIR = Path(os.environ.get("SOCLAB_SCENARIO_DIR", REPO_ROOT / "scenarios"))
 
 
 class ProviderSpec(StrictModel):
