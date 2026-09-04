@@ -9,7 +9,7 @@ COPY pyproject.toml uv.lock README.md ./
 COPY soclab ./soclab
 COPY policies ./policies
 COPY scenarios ./scenarios
-RUN uv sync --locked --no-dev --no-editable
+RUN uv sync --locked --no-dev --no-editable --extra docker
 
 FROM python:3.12.7-slim-bookworm AS runtime
 RUN groupadd --system soclab && useradd --system --gid soclab --uid 10001 --home /app soclab
@@ -22,4 +22,5 @@ RUN mkdir -p /app/runs && chown soclab:soclab /app/runs
 USER soclab
 EXPOSE 8000
 HEALTHCHECK --interval=10s --timeout=3s --retries=6 CMD python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2).status == 200 else 1)"
-CMD ["uvicorn", "soclab.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# PGPASSWORD is read by psycopg; the value comes from the Compose secret file, never from the image or env file.
+CMD ["sh", "-c", "if [ -f /run/secrets/postgres_password ]; then export PGPASSWORD=$(cat /run/secrets/postgres_password); fi; exec uvicorn soclab.api.main:app --host 0.0.0.0 --port 8000"]

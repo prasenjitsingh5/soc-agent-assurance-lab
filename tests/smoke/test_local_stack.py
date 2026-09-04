@@ -65,7 +65,10 @@ def test_stack_starts_runs_a_campaign_and_verifies_evidence() -> None:
         created_secret = True
     try:
         up = _compose(binary, "up", "-d", "--build", "--wait")
-        assert up.returncode == 0, up.stderr[-2000:]
+        if up.returncode != 0:
+            logs = _compose(binary, "logs", "--no-color", "--tail", "80", timeout=60)
+            detail = up.stderr[-1500:] + " --- logs --- " + logs.stdout[-4000:]
+            pytest.fail("compose up failed: " + detail)
         deadline = time.monotonic() + 90
         while time.monotonic() < deadline:
             try:
