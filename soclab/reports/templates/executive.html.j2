@@ -1,0 +1,59 @@
+{% extends "_base.html.j2" %}
+{% block title %}Executive assurance report{% endblock %}
+{% block body %}
+<h1>Should this agent get operational authority?</h1>
+<p class="muted">{{ assurance.provider }} / {{ assurance.model }}, {{ assurance.mode }} configuration, {{ assurance.sample_count }} scenario runs.</p>
+
+<div class="decision">
+  <div>Recommended authority level</div>
+  <div class="level">{{ assurance.recommended_authority_level.value }}</div>
+  {% if assurance.gate_failures %}
+    <p class="bad">Mandatory gate failed: {{ assurance.gate_failures | join(", ") }}. The composite score does not matter until this is fixed.</p>
+  {% elif assurance.critical_failures %}
+    <p class="bad">Critical regression: attacks succeeded in protected mode for {{ assurance.critical_failures | join(", ") }}.</p>
+  {% else %}
+    <p class="ok">No mandatory gate failed and no attack succeeded against the protected configuration.</p>
+  {% endif %}
+  <p>Composite assurance score <strong>{{ "%.2f" | format(assurance.composite) }}</strong>.
+     Attack success rate <strong>{{ "%.0f" | format(assurance.attack_success_rate.value * 100) }}%</strong>
+     (95% interval {{ "%.0f" | format(assurance.attack_success_ci95[0] * 100) }}% to {{ "%.0f" | format(assurance.attack_success_ci95[1] * 100) }}%).</p>
+</div>
+
+{% if control_change %}
+<h2>What the controls changed</h2>
+<table>
+  <tr><th></th><th>Baseline</th><th>Protected</th></tr>
+  <tr><td>Attack success rate</td><td class="bad">{{ "%.0f" | format(control_change.baseline_attack_success * 100) }}%</td><td class="ok">{{ "%.0f" | format(control_change.protected_attack_success * 100) }}%</td></tr>
+  <tr><td>Composite score</td><td>{{ "%.2f" | format(control_change.baseline_composite) }}</td><td>{{ "%.2f" | format(control_change.protected_composite) }}</td></tr>
+</table>
+{% endif %}
+
+<h2>Score families</h2>
+<table>
+  <tr><th>Family</th><th>Weight</th><th>Score</th></tr>
+  {% for f in families %}
+  <tr><td>{{ f.family | replace("_", " ") }}</td><td>{{ "%.2f" | format(f.weight) }}</td><td>{{ "%.2f" | format(f.value) }}</td></tr>
+  {% endfor %}
+</table>
+
+<h2>Model comparison</h2>
+<table>
+  <tr><th>Configuration</th><th>Composite</th><th>Attack success</th><th>False blocks</th><th>Gates</th><th>Authority</th></tr>
+  {% for row in comparison %}
+  <tr><td>{{ row.label }}</td><td>{{ row.composite }}</td><td>{{ row.attack_success_rate }}</td><td>{{ row.false_block_rate }}</td><td>{{ row.gate_failures | join(", ") or "none" }}</td><td>{{ row.authority }}</td></tr>
+  {% endfor %}
+</table>
+
+<h2>Economics</h2>
+<p>Cost figures are {% if assurance.cost_is_estimated %}<strong>estimated</strong> from list prices{% else %}provider reported{% endif %}. See the technical report for per-run tokens and latency.</p>
+
+<h2>Evidence integrity</h2>
+<p>{% if all_chains_valid %}<span class="ok">Every run's audit chain verified.</span>{% else %}<span class="bad">At least one audit chain failed verification. Treat this report as unsupported.</span>{% endif %}
+Root hashes: {% for run_id, root in audit_roots.items() %}<code>{{ root }}</code>{% if not loop.last %}, {% endif %}{% endfor %}</p>
+
+<h2>Limitations and residual risk</h2>
+<ul class="limits">
+  {% for note in assurance.limitations %}<li>{{ note }}</li>{% endfor %}
+  <li>Authority above L4 should not be granted on the strength of a single campaign. Repeat runs and a change review are required.</li>
+</ul>
+{% endblock %}
