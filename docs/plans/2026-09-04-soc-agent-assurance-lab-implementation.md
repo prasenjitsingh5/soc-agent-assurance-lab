@@ -73,6 +73,7 @@ docs/                                         Architecture, security and operati
 from fastapi.testclient import TestClient
 from apps.api.app.main import app
 
+
 def test_health() -> None:
     assert TestClient(app).get("/health").json() == {"status": "ok"}
 ```
@@ -88,6 +89,7 @@ Expected: FAIL because `apps.api.app.main` does not exist.
 from fastapi import FastAPI
 
 app = FastAPI(title="SOC Agent Assurance Lab")
+
 
 @app.get("/health")
 def health() -> dict[str, str]:
@@ -126,6 +128,7 @@ git commit -m "chore: establish tested project foundation"
 import pytest
 from pydantic import ValidationError
 from packages.contracts.models import ActionProposal
+
 
 def test_action_requires_incident_and_evidence() -> None:
     with pytest.raises(ValidationError):
@@ -174,6 +177,7 @@ git commit -m "feat: define canonical assurance contracts"
 ```python
 import pytest
 from services.simulator.tools import search_siem_events
+
 
 @pytest.mark.asyncio
 async def test_search_rejects_another_incident_scope(simulator) -> None:
@@ -360,7 +364,9 @@ git commit -m "feat: add fail-closed controlled execution"
 - [ ] **Step 1: Write parameterized failing contract tests**
 
 ```python
-@pytest.mark.parametrize("provider_id", ["mock", "openai", "azure_openai", "anthropic", "gemini", "vertex", "xai", "ollama"])
+@pytest.mark.parametrize(
+    "provider_id", ["mock", "openai", "azure_openai", "anthropic", "gemini", "vertex", "xai", "ollama"]
+)
 def test_provider_declares_capabilities(registry, provider_id: str) -> None:
     result = registry.compatibility(provider_id)
     assert result.provider_id == provider_id
@@ -514,6 +520,7 @@ def test_exporter_redacts_canary_secret(exporter, canonical_event) -> None:
     receipt = exporter.emit(canonical_event)
     assert "CANARY-SECRET-001" not in receipt.serialized_payload
     assert "[REDACTED]" in receipt.serialized_payload
+
 
 def test_report_contains_verifiable_run_identity(report_generator, completed_run) -> None:
     report = report_generator.generate(completed_run.id, audience="executive")
