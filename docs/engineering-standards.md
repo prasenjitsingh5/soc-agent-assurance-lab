@@ -46,7 +46,7 @@ The `Makefile` exposes `bootstrap`, `lint`, `format`, `typecheck`, `test`, `test
 
 ## Public claims
 
-Use only these labels for capabilities: implemented, simulated, tested, optional integration, reference architecture, planned. Do not describe anything here as production ready, compliant, secure by default or enterprise grade. `tests/docs` enforces this.
+Use only these labels for capabilities: implemented, simulated, tested, optional integration, reference architecture, planned. Avoid the phrase production ready. Avoid the phrase enterprise grade. Avoid claims of compliance or security by default. `tests/docs` enforces this.
 
 ## Definition of done
 
