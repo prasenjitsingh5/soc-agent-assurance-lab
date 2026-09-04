@@ -8,7 +8,7 @@ The lab does not promise identical capabilities across models. Each adapter decl
 |---|---|
 | deterministic | The mock provider. Runs in CI on every pull request. |
 | contract-tested | The adapter is exercised against recorded, sanitized vendor responses with no network. Parsing, error mapping, usage and cost labeling are covered. |
-| live-validated | A campaign has been run with real credentials and the result recorded in `docs/releases/`. No provider has this label yet. |
+| live-validated | A campaign has been run against a real model and the result recorded in `docs/releases/`. Ollama with llama3.2:3b holds this label as of 2026-09-04. |
 
 ## Matrix
 
@@ -21,8 +21,17 @@ The lab does not promise identical capabilities across models. Each adapter decl
 | gemini | google-genai | yes | yes | yes | yes | contract-tested | `GOOGLE_API_KEY` |
 | vertex | google-genai, Vertex configuration | yes | yes | yes | yes | contract-tested | `GOOGLE_CLOUD_PROJECT`, `GOOGLE_CLOUD_LOCATION` |
 | xai | OpenAI-compatible adapter | yes | yes | yes | yes | contract-tested via OpenAI adapter | `XAI_API_KEY` |
-| ollama | native HTTP | model dependent | yes | yes | yes | contract-tested | `OLLAMA_BASE_URL` (default localhost) |
+| ollama | native HTTP | model dependent | yes | yes | yes | live-validated (llama3.2:3b, 2026-09-04) | `OLLAMA_BASE_URL` (default localhost) |
 | openai_compatible | OpenAI-compatible adapter | yes | yes | yes | no, estimated | gateway path | `OPENAI_COMPATIBLE_BASE_URL` |
+
+## Running a live provider
+
+```bash
+uv run soclab compare --provider ollama --model llama3.2:3b --out runs/ollama
+uv run soclab campaign --provider openai --mode protected
+```
+
+Live providers run only the scenarios whose attack lives in the fixture data (ATK-001 injected SIEM note, ATK-009 call budget). Scenarios that script the mock's replies are skipped, because a real model cannot be forced to answer a particular way. Every stage sends the model an explicit instruction naming the JSON shape it must return, and native tool calls are accepted as equivalent to that JSON.
 
 ## Gateway path
 

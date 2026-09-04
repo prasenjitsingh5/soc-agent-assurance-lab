@@ -6,7 +6,7 @@ This document is deliberately blunt. A reader deciding whether to trust the lab'
 
 - **It does not connect to anything real.** SIEM, identity, endpoint and network tools are synthetic fixtures. Containment actions change in-memory state and return receipts marked `simulation=true`.
 - **It does not certify a model.** Scores describe behavior on one synthetic incident with twelve fixed attacks. They are evidence for a decision, not a compliance attestation.
-- **It has not run against a live commercial model in this release.** Every non-mock provider is contract-tested against recorded fixtures. Live validation is a documented step in `docs/custom-provider.md` and will be recorded in `docs/releases/` when it happens.
+- **Only one live model has been run.** Ollama with a 3B local model completed both campaigns; the result is in `docs/releases/0.1.0-evidence.md`. Every commercial adapter is contract-tested against recorded fixtures and awaits a live run. Only the two fixture-driven attacks apply to live models; the other ten depend on scripting the mock.
 - **One incident family.** Identity compromise only. Ransomware, insider threat and others are out of scope for Phase 1.
 - **One agent.** No multi-agent orchestration.
 - **No web application yet.** Executive, analyst and architect views and the scenario replay are Phase 2. The API already serves the data.
