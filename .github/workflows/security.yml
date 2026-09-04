@@ -41,7 +41,7 @@ jobs:
           uv run cyclonedx-py environment --output-format json --output-file dist/sbom.cdx.json
           sha256sum dist/sbom.cdx.json > dist/sbom.cdx.json.sha256
       - name: Upload SBOM
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: sbom
           path: dist/
