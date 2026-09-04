@@ -18,6 +18,7 @@ apps/web/dist/
 
 # Local tooling and secrets
 tools/
+.python-version
 .env
 .env.*
 !.env.example

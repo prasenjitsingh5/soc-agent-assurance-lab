@@ -39,7 +39,7 @@ Read these files completely before implementation.
 - Use test-driven development.
 - Keep modules focused and interfaces typed.
 - Favor deterministic components for authorization, scoring and fixtures.
-- Pin direct dependencies and commit lockfiles.
+- Pin direct dependencies and commit the uv lockfile (`uv.lock`). Use `uv run` for every command.
 - Use conventional commits.
 - Keep each plan task independently testable.
 - Record design deviations in `docs/adr/`.
