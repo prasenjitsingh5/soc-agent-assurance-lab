@@ -101,6 +101,10 @@ Every task is an issue, a branch and a pull request that CI must pass. See [CONT
 
 No real SIEM, identity, endpoint or network system is ever contacted. All data is synthetic. Containment actions are simulated and return receipts that say so. No offensive tooling is included; the attack scenarios are defensive test cases against a simulated target. See [SECURITY.md](SECURITY.md).
 
+## Disclaimer
+
+This is a personal, independent project, not affiliated with or endorsed by any employer or organization. It is provided as is, without warranty, and is not security, legal or compliance advice. All data is fictional. Third-party names are used only to identify interoperability. Read [DISCLAIMER.md](DISCLAIMER.md) before relying on anything here.
+
 ## License
 
 Apache-2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).

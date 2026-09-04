@@ -28,6 +28,10 @@ Out of scope:
 - Attacks that require control of the host, the signing key or the OPA container
 - Findings in the attack scenarios themselves; they are defensive test cases
 
+## Responsible use
+
+The adversarial scenarios are defensive tests against the simulated environment in this repository. Do not adapt them to probe systems, models or services you do not own or have written authorization to test. See [DISCLAIMER.md](DISCLAIMER.md).
+
 ## Supply chain
 
 Direct dependencies are pinned in `pyproject.toml` and every transitive dependency in `uv.lock`. CI runs `pip-audit`, `bandit`, a container build and `make sbom` produces a CycloneDX bill of materials with a checksum. Dependabot is enabled for pip and GitHub Actions.

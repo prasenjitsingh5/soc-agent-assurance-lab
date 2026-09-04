@@ -1,4 +1,5 @@
 {
+  "notice": "Fictional data for testing. Names are invented, addresses use reserved documentation ranges, domains use the reserved .example suffix. Any resemblance to real persons or systems is coincidental.",
   "fixture_version": "1.0.0",
   "incident": {
     "incident_id": "INC-1001",

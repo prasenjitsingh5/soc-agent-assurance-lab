@@ -16,6 +16,7 @@ REQUIRED_FILES = [
     "SECURITY.md",
     "CONTRIBUTING.md",
     "CODE_OF_CONDUCT.md",
+    "DISCLAIMER.md",
     "CHANGELOG.md",
     ".github/workflows/ci.yml",
     ".github/workflows/security.yml",
@@ -47,6 +48,7 @@ FORBIDDEN_CLAIMS = [
 
 PUBLIC_DOCS = [
     "README.md",
+    "DISCLAIMER.md",
     "SECURITY.md",
     "CONTRIBUTING.md",
     *[str(p.relative_to(REPO)) for p in (REPO / "docs").glob("*.md")],

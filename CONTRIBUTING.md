@@ -21,6 +21,10 @@ The full set of standing rules is in [docs/engineering-standards.md](docs/engine
 5. Use conventional commit messages: `feat:`, `fix:`, `chore:`, `docs:`, `test:`.
 6. Pull requests are squash-merged after CI passes.
 
+## Licensing of contributions
+
+By opening a pull request you confirm the work is yours, that you have the right to submit it, and that it is licensed under Apache-2.0 like the rest of the project. See [DISCLAIMER.md](DISCLAIMER.md).
+
 ## Setup
 
 ```bash
