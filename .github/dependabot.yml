@@ -15,3 +15,7 @@ updates:
     directory: /infrastructure/docker
     schedule:
       interval: weekly
+    ignore:
+      # Interpreter major and minor bumps get a compatibility run first, see CONTRIBUTING.
+      - dependency-name: python
+        update-types: [version-update:semver-major, version-update:semver-minor]
