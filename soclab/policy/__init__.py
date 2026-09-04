@@ -13,11 +13,13 @@ from soclab.policy.client import (
     default_tool_registry,
     find_opa_binary,
 )
+from soclab.policy.server import ManagedOpaServer
 
 __all__ = [
     "ApprovalContext",
     "AuthorizationContext",
     "LimitContext",
+    "ManagedOpaServer",
     "OpaExecPolicyEngine",
     "OpaHttpPolicyEngine",
     "PolicyEngine",
