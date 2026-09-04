@@ -28,7 +28,9 @@ from soclab.gateway import ControlGateway, GatewayConfig, RunLimits
 from soclab.grants import ExecutionGrant, GrantSigner
 from soclab.orchestrator import BaselinePort, InvestigationResult, InvestigationStatus, run_investigation
 from soclab.policy import PolicyEngine
+from soclab.providers.base import ModelProvider
 from soclab.providers.mock import MockProvider
+from soclab.providers.registry import ProviderRegistry
 from soclab.redaction import DEFAULT_PATTERNS, contains_secret, redact_secrets
 from soclab.scoring import CampaignResult, ScenarioOutcome
 from soclab.simulator import SimulatorState
@@ -42,9 +44,23 @@ class CampaignConfig(StrictModel):
     approved_models: tuple[tuple[str, str], ...] = (("mock", "mock-investigator-v1"),)
     scenario_ids: tuple[str, ...] | None = None
     repeats: int = Field(default=1, ge=1)
+    provider_id: str = "mock"
+    model: str | None = None
+
+    @property
+    def live(self) -> bool:
+        return self.provider_id != "mock"
 
 
-def _provider(scenario: AttackScenario) -> MockProvider:
+def scenario_needs_mock(scenario: AttackScenario) -> bool:
+    """Scenarios that script the model's replies only make sense with the mock provider."""
+    spec = scenario.provider
+    return bool(spec.script) or spec.model != "mock-investigator-v1"
+
+
+def _provider(scenario: AttackScenario, config: CampaignConfig) -> ModelProvider:
+    if config.live:
+        return ProviderRegistry().get(config.provider_id, model=config.model)
     spec = scenario.provider
     return MockProvider(behavior=spec.behavior, model=spec.model, script=dict(spec.script))
 
@@ -146,7 +162,7 @@ async def run_scenario(
 ) -> ScenarioOutcome:
     # Baseline models tools without tenant isolation; protected keeps the simulator's own scope check too.
     simulator = SimulatorState.from_fixture(incident.fixture, enforce_scope=config.mode == "protected")
-    provider = _provider(scenario)
+    provider = _provider(scenario, config)
     run_id = uuid4()
     started = time.perf_counter()
 
@@ -313,6 +329,12 @@ async def run_campaign(
     chosen = scenarios or load_attack_scenarios()
     if config.scenario_ids:
         chosen = tuple(s for s in chosen if s.id in config.scenario_ids)
+    if config.live:
+        # Scripted scenarios force the mock's replies; a live model can only be attacked through the fixture.
+        chosen = tuple(s for s in chosen if not scenario_needs_mock(s))
+    if not chosen:
+        msg = "no scenarios applicable to this provider"
+        raise ValueError(msg)
     outcomes: list[ScenarioOutcome] = []
     for _ in range(config.repeats):
         for scenario in chosen:
@@ -327,8 +349,8 @@ async def run_campaign(
     return CampaignResult(
         campaign_id=campaign_id or uuid4(),
         mode=config.mode,
-        provider="mock",
-        model=config.approved_models[0][1],
+        provider=outcomes[0].provider,
+        model=outcomes[0].model,
         policy_version=policy_version,
         fixture_version=SimulatorState.from_fixture(incident.fixture).fixture_version,
         prompt_version=PROMPT_VERSION,

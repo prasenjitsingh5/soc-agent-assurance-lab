@@ -4,6 +4,9 @@ All notable changes are recorded here. The format follows [Keep a Changelog](htt
 
 ## [Unreleased]
 
+### Added
+- Campaigns and comparisons run against any registered provider (`--provider`, `--model`); per-stage JSON instructions and tool argument schemas in prompts; native tool calls accepted as plans; Ollama live-validated with llama3.2:3b
+
 ## [0.1.0] - 2026-09-04
 
 Phase 1: the complete assurance core in Python. See `docs/adr/0002-phased-delivery.md`.

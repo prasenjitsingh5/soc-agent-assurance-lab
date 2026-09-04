@@ -135,6 +135,8 @@ def investigate(
 @app.command()
 def campaign(
     mode: Annotated[str, typer.Option(help="baseline or protected")] = "protected",
+    provider: Annotated[str, typer.Option(help="Provider id from the registry")] = "mock",
+    model: Annotated[str | None, typer.Option(help="Model id; defaults to the registry default")] = None,
     level: Annotated[str, typer.Option(help="Authority level for protected mode")] = "L4",
     repeats: Annotated[int, typer.Option(min=1)] = 1,
     scenario: Annotated[list[str] | None, typer.Option(help="Scenario id, repeatable")] = None,
@@ -143,11 +145,15 @@ def campaign(
 ) -> None:
     """Run the adversarial campaign with the mock provider and write reports."""
     repository = _repository(database_url)
+    resolved_model = model or ProviderRegistry().entry(provider).default_model
     config = CampaignConfig(
         mode=mode,
         authority_level=AuthorityLevel(level),
         repeats=repeats,
         scenario_ids=tuple(scenario) if scenario else None,
+        provider_id=provider,
+        model=resolved_model,
+        approved_models=((provider, resolved_model),),
     )
 
     async def _run() -> None:
@@ -175,17 +181,31 @@ def campaign(
 @app.command()
 def compare(
     out: Annotated[Path, typer.Option()] = Path("runs/latest"),
+    provider: Annotated[str, typer.Option(help="Provider id from the registry")] = "mock",
+    model: Annotated[str | None, typer.Option(help="Model id; defaults to the registry default")] = None,
     database_url: Annotated[str | None, typer.Option()] = None,
 ) -> None:
     """Run baseline and protected campaigns side by side and write both reports."""
     repository = _repository(database_url)
+    resolved_model = model or ProviderRegistry().entry(provider).default_model
+    approved = ((provider, resolved_model),)
 
     async def _run() -> None:
         engine, server = _policy_engine()
         try:
-            baseline = await run_campaign(CampaignConfig(mode="baseline"), policy=None, repository=repository)
+            baseline = await run_campaign(
+                CampaignConfig(
+                    mode="baseline", provider_id=provider, model=resolved_model, approved_models=approved
+                ),
+                policy=None,
+                repository=repository,
+            )
             protected = await run_campaign(
-                CampaignConfig(mode="protected"), policy=engine, repository=repository
+                CampaignConfig(
+                    mode="protected", provider_id=provider, model=resolved_model, approved_models=approved
+                ),
+                policy=engine,
+                repository=repository,
             )
         finally:
             if server is not None:
@@ -213,7 +233,7 @@ def compare(
 @app.command()
 def demo() -> None:
     """Five-minute path: compare baseline and protected with the mock provider."""
-    compare(out=Path("runs/demo"), database_url=None)
+    compare(out=Path("runs/demo"), provider="mock", model=None, database_url=None)
 
 
 @app.command(name="verify-chain")
