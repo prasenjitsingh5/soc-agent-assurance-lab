@@ -107,6 +107,7 @@ class InvestigationResult(StrictModel):
     recommended_action: ActionProposal | None
     action_result: ProposalResult | None
     executions: tuple[ProposalResult, ...]
+    tool_outputs: tuple[ProposalResult, ...]
     events: tuple[CanonicalModelEvent, ...]
     failure_reason: str | None = None
 
@@ -371,6 +372,7 @@ async def run_investigation(
         recommended_action=proposal,
         action_result=action_result,
         executions=tuple(r for r in run.executions if r.receipt is not None),
+        tool_outputs=tuple(r for r in run.executions if r.output is not None),
         events=tuple(run.events),
         failure_reason=failure,
     )
