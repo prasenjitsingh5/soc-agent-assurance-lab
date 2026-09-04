@@ -30,11 +30,12 @@ See [docs/adr](docs/adr) for the decisions behind the phasing and the [design sp
 ## Development
 
 ```bash
-make bootstrap
+uv sync --extra dev --extra security   # or: make bootstrap
+uv run pytest
 make verify
 ```
 
-Requires Python 3.12 and the `opa` binary for policy tests.
+Requires [uv](https://docs.astral.sh/uv/) and Python 3.12. Policy tests need the `opa` binary on PATH or in `tools/`. The committed `uv.lock` pins every transitive dependency; CI installs with `uv sync --locked`.
 
 ## License
 
