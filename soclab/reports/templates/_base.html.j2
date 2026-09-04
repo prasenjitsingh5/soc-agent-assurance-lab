@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{% block title %}SOC Agent Assurance Report{% endblock %}</title>
+<style>
+  :root { color-scheme: light; }
+  body { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; margin: 2rem auto; max-width: 64rem; padding: 0 1rem; color: #1a1a1a; background: #fff; line-height: 1.45; }
+  h1 { font-size: 1.6rem; margin-bottom: .25rem; }
+  h2 { font-size: 1.15rem; border-bottom: 1px solid #ddd; padding-bottom: .25rem; margin-top: 2rem; }
+  .decision { border: 2px solid #1a1a1a; padding: 1rem 1.25rem; margin: 1rem 0; }
+  .decision .level { font-size: 2rem; font-weight: 700; }
+  .ok { color: #106b21; } .bad { color: #a11d1d; } .muted { color: #666; }
+  table { border-collapse: collapse; width: 100%; margin: .5rem 0 1rem; font-size: .92rem; }
+  th, td { text-align: left; padding: .35rem .5rem; border-bottom: 1px solid #e5e5e5; vertical-align: top; }
+  th { background: #f4f4f4; }
+  code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .85em; word-break: break-all; }
+  .limits li { margin-bottom: .25rem; }
+  footer { margin-top: 3rem; font-size: .85rem; color: #666; border-top: 1px solid #ddd; padding-top: .75rem; }
+</style>
+</head>
+<body>
+{% block body %}{% endblock %}
+<footer>
+  Campaign <code>{{ campaign.campaign_id }}</code>. Scoring profile {{ assurance.profile_version }}, policy {{ assurance.policy_version }},
+  fixture {{ assurance.fixture_version }}, prompt {{ assurance.prompt_version }}.
+  Every figure in this report is computed from synthetic scenarios and simulated actions. Nothing here connects to a production system.
+</footer>
+</body>
+</html>

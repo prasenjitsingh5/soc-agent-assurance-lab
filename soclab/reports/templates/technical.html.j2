@@ -1,0 +1,61 @@
+{% extends "_base.html.j2" %}
+{% block title %}Technical evidence package{% endblock %}
+{% block body %}
+<h1>Technical evidence package</h1>
+<p class="muted">{{ assurance.provider }} / {{ assurance.model }}, {{ assurance.mode }}, campaign <code>{{ campaign.campaign_id }}</code>.
+Recommended authority {{ assurance.recommended_authority_level.value }}, composite {{ "%.3f" | format(assurance.composite) }}.</p>
+
+<h2>Versions</h2>
+<table>
+  <tr><th>Scoring profile</th><td>{{ assurance.profile_version }}</td></tr>
+  <tr><th>Policy</th><td>{{ assurance.policy_version }}</td></tr>
+  <tr><th>Fixture</th><td>{{ assurance.fixture_version }}</td></tr>
+  <tr><th>Prompt</th><td>{{ assurance.prompt_version }}</td></tr>
+</table>
+
+<h2>Score families and components</h2>
+<table>
+  <tr><th>Family</th><th>Component</th><th>Numerator</th><th>Denominator</th><th>Value</th></tr>
+  {% for f in families %}{% for c in f.components %}
+  <tr><td>{{ f.family }}</td><td>{{ c.name }}</td><td>{{ c.numerator }}</td><td>{{ c.denominator }}</td><td>{{ "%.3f" | format(c.value) }}</td></tr>
+  {% endfor %}{% endfor %}
+</table>
+
+<h2>Gates</h2>
+<p>{% if assurance.gate_failures %}<span class="bad">Failed: {{ assurance.gate_failures | join(", ") }}</span>{% else %}<span class="ok">All mandatory gates passed.</span>{% endif %}
+{% if assurance.critical_failures %}<br><span class="bad">Critical failures: {{ assurance.critical_failures | join(", ") }}</span>{% endif %}</p>
+
+<h2>Scenario outcomes</h2>
+<table>
+  <tr><th>Scenario</th><th>Class</th><th>Attack succeeded</th><th>Leak</th><th>Bypass</th><th>Claims supported</th><th>Recommended</th><th>Complete</th><th>Tokens</th><th>Latency ms</th><th>Cost USD</th></tr>
+  {% for o in outcomes %}
+  <tr>
+    <td>{{ o.scenario_id }} v{{ o.scenario_version }}</td><td>{{ o.attack_class }}</td>
+    <td class="{{ 'bad' if o.attack_succeeded else 'ok' }}">{{ o.attack_succeeded }}</td>
+    <td class="{{ 'bad' if o.leaked_canary else 'ok' }}">{{ o.leaked_canary }}</td>
+    <td class="{{ 'bad' if o.approval_bypassed else 'ok' }}">{{ o.approval_bypassed }}</td>
+    <td>{{ o.claims_supported }}/{{ o.claims_total }}</td><td>{{ o.recommended_tool or "none" }}</td><td>{{ o.completed }}</td>
+    <td>{{ o.tokens_total }}</td><td>{{ o.latency_ms }}</td><td>{{ o.cost_usd }}{% if o.cost_is_estimated %} (est.){% endif %}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+<h2>Policy decisions, approvals and executions</h2>
+<table>
+  <tr><th>Scenario</th><th>Seq</th><th>Event</th><th>Detail</th></tr>
+  {% for d in decisions %}
+  <tr><td>{{ d.scenario_id }}</td><td>{{ d.sequence }}</td><td>{{ d.type }}</td><td><code>{{ d.detail }}</code></td></tr>
+  {% endfor %}
+</table>
+
+<h2>Audit chain verification</h2>
+<table>
+  <tr><th>Scenario</th><th>Run</th><th>Valid</th><th>Length</th><th>Root hash</th></tr>
+  {% for c in chain_details %}
+  <tr><td>{{ c.scenario_id }}</td><td><code>{{ c.run_id }}</code></td><td class="{{ 'ok' if c.valid else 'bad' }}">{{ c.valid }}{% if not c.valid %} at {{ c.first_invalid_sequence }}{% endif %}</td><td>{{ c.length }}</td><td><code>{{ c.root_hash }}</code></td></tr>
+  {% endfor %}
+</table>
+
+<h2>Limitations</h2>
+<ul class="limits">{% for note in assurance.limitations %}<li>{{ note }}</li>{% endfor %}</ul>
+{% endblock %}
