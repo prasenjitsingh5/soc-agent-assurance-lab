@@ -1,0 +1,57 @@
+name: security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "17 6 * * 1"
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  supply-chain:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.12.9"
+          enable-cache: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: uv sync --locked --extra dev --extra security --extra providers
+      - name: Secret scan across history
+        uses: gitleaks/gitleaks-action@v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Static analysis
+        run: uv run bandit -r soclab -c pyproject.toml -f txt
+      - name: Dependency audit
+        run: uv run pip-audit --skip-editable
+      - name: SBOM
+        run: |
+          mkdir -p dist
+          uv run cyclonedx-py environment --output-format json --output-file dist/sbom.cdx.json
+          sha256sum dist/sbom.cdx.json > dist/sbom.cdx.json.sha256
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: dist/
+      - name: Build image
+        run: docker build -f infrastructure/docker/api.Dockerfile -t soclab/api:scan .
+      - name: Container scan
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: soclab/api:scan
+          format: table
+          exit-code: "1"
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
