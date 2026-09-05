@@ -5,7 +5,7 @@ through :class:`ToolProposalPort` only. It never holds a simulator or executor
 reference, so it cannot change state on its own.
 """
 
-from soclab.orchestrator.ports import BaselinePort, ProposalResult, ToolProposalPort
+from soclab.orchestrator.ports import BaselinePort, CostSink, ProposalResult, ToolProposalPort
 from soclab.orchestrator.workflow import (
     Claim,
     Finding,
@@ -18,6 +18,7 @@ from soclab.orchestrator.workflow import (
 __all__ = [
     "BaselinePort",
     "Claim",
+    "CostSink",
     "Finding",
     "InvestigationResult",
     "InvestigationStatus",

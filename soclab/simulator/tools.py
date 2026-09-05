@@ -6,6 +6,13 @@ the prior state, the new state and an execution id. Retrying a state-changing
 tool with the same ``idempotency_key`` returns the original receipt without a
 second mutation.
 
+Every tool checks the type of its declared arguments and raises
+:class:`InvalidArgumentError` for anything that is not the scalar it expects,
+so nested or malformed values fail closed instead of raising deep inside the
+simulator. Extra keyword arguments are ignored, which is deliberate: the
+baseline configuration must accept smuggled arguments so the lab can measure
+what the policy layer adds.
+
 This module has no knowledge of policy. Authorization happens in the gateway;
 the executor is the only caller in production paths. Tests call it directly.
 """
@@ -33,8 +40,34 @@ class UnknownResourceError(ToolError):
     pass
 
 
+class InvalidArgumentError(ToolError):
+    """A declared argument had the wrong type."""
+
+
 def _hash(obj: Any) -> str:
     return hashlib.sha256(json.dumps(obj, sort_keys=True, default=str).encode()).hexdigest()
+
+
+def _require_str(name: str, value: Any) -> str:
+    if not isinstance(value, str):
+        msg = f"argument {name!r} must be a string, got {type(value).__name__}"
+        raise InvalidArgumentError(msg)
+    return value
+
+
+def _require_int(name: str, value: Any) -> int:
+    if isinstance(value, bool) or not isinstance(value, int):
+        msg = f"argument {name!r} must be an integer, got {type(value).__name__}"
+        raise InvalidArgumentError(msg)
+    return value
+
+
+def _resolve_user(state: SimulatorState, user_id: Any) -> str:
+    raw = _require_str("user_id", user_id)
+    resolved = state.resolve_user_id(raw)
+    if resolved is None:
+        raise UnknownResourceError(f"unknown user {raw!r}")
+    return resolved
 
 
 def _record(state: SimulatorState, tool: str, args: dict[str, Any]) -> str:
@@ -80,6 +113,7 @@ async def search_siem_events(
     state: SimulatorState, *, incident_id: str, query: str, **_: Any
 ) -> dict[str, Any]:
     state.assert_incident(incident_id)
+    query = _require_str("query", query)
     state.access_log.append({"tool": "search_siem_events", "incident_id": incident_id, "query": query})
     terms = [t.strip().lower() for t in query.split() if t.strip()]
     hits = []
@@ -94,10 +128,8 @@ async def get_identity_profile(
     state: SimulatorState, *, incident_id: str, user_id: str, **_: Any
 ) -> dict[str, Any]:
     state.assert_incident(incident_id)
+    user = state.users[_resolve_user(state, user_id)]
     state.access_log.append({"tool": "get_identity_profile", "incident_id": incident_id, "user_id": user_id})
-    user = state.users.get(user_id)
-    if user is None:
-        raise UnknownResourceError(f"unknown user {user_id!r}")
     return {**user, "content_hash": _hash(user), "trust": "untrusted"}
 
 
@@ -105,14 +137,14 @@ async def get_authentication_history(
     state: SimulatorState, *, incident_id: str, user_id: str, limit: int = 50, **_: Any
 ) -> dict[str, Any]:
     state.assert_incident(incident_id)
+    canonical = _resolve_user(state, user_id)
+    limit = _require_int("limit", limit)
     state.access_log.append(
         {"tool": "get_authentication_history", "incident_id": incident_id, "user_id": user_id}
     )
-    if user_id not in state.users:
-        raise UnknownResourceError(f"unknown user {user_id!r}")
-    events = [e for e in state.authentication_events if e["user_id"] == user_id][: max(1, limit)]
+    events = [e for e in state.authentication_events if e["user_id"] == canonical][: max(1, limit)]
     return {
-        "user_id": user_id,
+        "user_id": canonical,
         "count": len(events),
         "events": events,
         "content_hash": _hash(events),
@@ -124,6 +156,7 @@ async def get_endpoint_status(
     state: SimulatorState, *, incident_id: str, endpoint_id: str, **_: Any
 ) -> dict[str, Any]:
     state.assert_incident(incident_id)
+    endpoint_id = _require_str("endpoint_id", endpoint_id)
     state.access_log.append(
         {"tool": "get_endpoint_status", "incident_id": incident_id, "endpoint_id": endpoint_id}
     )
@@ -137,6 +170,7 @@ async def lookup_indicator(
     state: SimulatorState, *, incident_id: str, indicator: str, **_: Any
 ) -> dict[str, Any]:
     state.assert_incident(incident_id)
+    indicator = _require_str("indicator", indicator)
     state.access_log.append({"tool": "lookup_indicator", "incident_id": incident_id, "indicator": indicator})
     record = state.indicators.get(indicator)
     if record is None:
@@ -163,6 +197,8 @@ async def create_incident(
     **_: Any,
 ) -> dict[str, Any]:
     state.assert_incident(incident_id)
+    title = _require_str("title", title)
+    severity = _require_str("severity", severity)
     if (cached := _idempotent(state, idempotency_key)) is not None:
         return cached
     before = list(state.incidents_created)
@@ -175,7 +211,7 @@ async def create_incident(
     receipt = _receipt(
         state,
         "create_incident",
-        {"title": title, "severity": severity},
+        {"incident_id": incident_id, "title": title, "severity": severity},
         before,
         list(state.incidents_created),
     )
@@ -186,14 +222,17 @@ async def revoke_sessions(
     state: SimulatorState, *, incident_id: str, user_id: str, idempotency_key: str | None = None, **_: Any
 ) -> dict[str, Any]:
     state.assert_incident(incident_id)
-    if user_id not in state.users:
-        raise UnknownResourceError(f"unknown user {user_id!r}")
+    canonical = _resolve_user(state, user_id)
     if (cached := _idempotent(state, idempotency_key)) is not None:
         return cached
-    before = state.revoked_sessions.get(user_id, 0)
-    state.revoked_sessions[user_id] = before + 1
+    before = state.revoked_sessions.get(canonical, 0)
+    state.revoked_sessions[canonical] = before + 1
     receipt = _receipt(
-        state, "revoke_sessions", {"user_id": user_id}, {"revocations": before}, {"revocations": before + 1}
+        state,
+        "revoke_sessions",
+        {"incident_id": incident_id, "user_id": user_id, "resolved_user_id": canonical},
+        {"revocations": before},
+        {"revocations": before + 1},
     )
     return _remember(state, idempotency_key, receipt)
 
@@ -202,14 +241,19 @@ async def disable_account(
     state: SimulatorState, *, incident_id: str, user_id: str, idempotency_key: str | None = None, **_: Any
 ) -> dict[str, Any]:
     state.assert_incident(incident_id)
-    user = state.users.get(user_id)
-    if user is None:
-        raise UnknownResourceError(f"unknown user {user_id!r}")
+    canonical = _resolve_user(state, user_id)
+    user = state.users[canonical]
     if (cached := _idempotent(state, idempotency_key)) is not None:
         return cached
     before = {"account_enabled": user["account_enabled"]}
     user["account_enabled"] = False
-    receipt = _receipt(state, "disable_account", {"user_id": user_id}, before, {"account_enabled": False})
+    receipt = _receipt(
+        state,
+        "disable_account",
+        {"incident_id": incident_id, "user_id": user_id, "resolved_user_id": canonical},
+        before,
+        {"account_enabled": False},
+    )
     return _remember(state, idempotency_key, receipt)
 
 
@@ -217,6 +261,7 @@ async def isolate_endpoint(
     state: SimulatorState, *, incident_id: str, endpoint_id: str, idempotency_key: str | None = None, **_: Any
 ) -> dict[str, Any]:
     state.assert_incident(incident_id)
+    endpoint_id = _require_str("endpoint_id", endpoint_id)
     endpoint = state.endpoints.get(endpoint_id)
     if endpoint is None:
         raise UnknownResourceError(f"unknown endpoint {endpoint_id!r}")
@@ -224,7 +269,13 @@ async def isolate_endpoint(
         return cached
     before = {"isolated": endpoint["isolated"]}
     endpoint["isolated"] = True
-    receipt = _receipt(state, "isolate_endpoint", {"endpoint_id": endpoint_id}, before, {"isolated": True})
+    receipt = _receipt(
+        state,
+        "isolate_endpoint",
+        {"incident_id": incident_id, "endpoint_id": endpoint_id},
+        before,
+        {"isolated": True},
+    )
     return _remember(state, idempotency_key, receipt)
 
 
@@ -232,12 +283,17 @@ async def block_indicator(
     state: SimulatorState, *, incident_id: str, indicator: str, idempotency_key: str | None = None, **_: Any
 ) -> dict[str, Any]:
     state.assert_incident(incident_id)
+    indicator = _require_str("indicator", indicator)
     if (cached := _idempotent(state, idempotency_key)) is not None:
         return cached
     before = sorted(state.blocked_indicators)
     state.blocked_indicators.add(indicator)
     receipt = _receipt(
-        state, "block_indicator", {"indicator": indicator}, before, sorted(state.blocked_indicators)
+        state,
+        "block_indicator",
+        {"incident_id": incident_id, "indicator": indicator},
+        before,
+        sorted(state.blocked_indicators),
     )
     return _remember(state, idempotency_key, receipt)
 

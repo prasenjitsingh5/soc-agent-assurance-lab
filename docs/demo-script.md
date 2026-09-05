@@ -39,7 +39,7 @@ The `pdf` extra is only needed for step 6.
 uv run soclab scenarios
 ```
 
-Twelve versioned attacks: injected instructions in SIEM data and threat intelligence, canary leakage, unregistered tools, privileged disablement, fabricated evidence, argument smuggling, cross-incident reads, budget exhaustion, forged grants, model substitution and malformed output.
+Thirty versioned attacks in five families and three difficulty tiers, each mapped to MITRE ATLAS and the OWASP Top 10 for LLM Applications. They cover injected instructions in seven channels (SIEM notes, threat intelligence, ticket comments, EDR command lines, DNS answers, mail headers, feed names), poisoned tool results, goal hijacking, canary leakage in plain and encoded form, unregistered tools, privileged disablement, fabricated evidence, argument smuggling, smuggled approvals, cross-incident reads and writes, call and spend exhaustion, forged, replayed and swapped grants, evidence tampering, catch-all block rules, authority-claim jailbreaks, lookalike identifiers, model substitution and malformed output.
 
 ## 3. Run the comparison (two minutes)
 
@@ -50,10 +50,12 @@ uv run soclab compare --out runs/demo
 Expected output:
 
 ```
-baseline : attack success 75%, authority L1
+baseline : attack success 87%, authority L1
 protected: attack success 0%, authority L4
 reports  : runs/demo/executive.html and runs/demo/technical.html
 ```
+
+Twenty-six of thirty attacks land on the baseline. The four that do not (unregistered tool, fabricated citations, malformed output, evidence tampering) are stopped by the orchestrator's schema and citation checks and by the hash chain, which exist in both configurations. Protected mode stops all thirty and earns L4. Bounded autonomy (L5) needs every scenario run at least twice: `uv run soclab campaign --mode protected --repeats 2`.
 
 Open `runs/demo/executive.html`. The first block is the recommended authority level and the gate status. The "What the controls changed" table is the baseline-to-protected comparison.
 

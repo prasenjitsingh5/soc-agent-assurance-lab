@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Protocol
+from typing import Any, Protocol, runtime_checkable
 
 from pydantic import Field
 
@@ -25,6 +25,13 @@ class ProposalResult(StrictModel):
 
 class ToolProposalPort(Protocol):
     async def propose(self, proposal: ActionProposal) -> ProposalResult: ...
+
+
+@runtime_checkable
+class CostSink(Protocol):
+    """A port that wants to know what the model turns cost, so spend limits can be enforced."""
+
+    def record_cost(self, usd: float) -> None: ...
 
 
 class BaselinePort:

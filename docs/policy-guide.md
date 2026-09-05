@@ -36,12 +36,13 @@ Set `SOCLAB_OPA_URL` to use an OPA server that is already running, as the Docker
     "limits": {"calls_made": 6, "max_calls": 40, "cost_used_usd": 0.0, "max_cost_usd": 2.0,
                "elapsed_seconds": 4.2, "max_elapsed_seconds": 300},
     "approval": {"present": false, "valid": false},
+    "protected_assets": {"user_ids": ["u-svc-backup"], "endpoint_ids": [], "indicators": ["203.0.113.10", "0.0.0.0/0"]},
     "degraded": false
   }
 }
 ```
 
-The gateway builds the context. The model never contributes to it.
+The gateway builds the context. The model never contributes to it. The protected-asset lists come from the fixture's `protected_assets` block in campaigns and from `GatewayConfig` elsewhere; when they are missing the policy denies every state change rather than treating nothing as protected.
 
 ## Output
 
@@ -51,7 +52,7 @@ The gateway builds the context. The model never contributes to it.
   "reason_codes": ["approval_required_high_impact"],
   "obligations": [],
   "risk_tier": "high",
-  "policy_version": "2026.09.04-1"
+  "policy_version": "2026.09.05-1"
 }
 ```
 
@@ -68,6 +69,11 @@ The gateway builds the context. The model never contributes to it.
 | `limit_exceeded` | calls, cost or elapsed time at or over the limit |
 | `degraded_mode_blocks_state_change` | policy in degraded mode and the tool changes state |
 | `authority_below_action_threshold` | state-changing action below L4 |
+| `argument_not_scalar` | an argument value is an object or an array |
+| `argument_too_long` | a string argument longer than 512 characters |
+| `non_ascii_argument` | a string argument with characters outside printable ASCII, which is how lookalike identifiers arrive |
+| `protected_asset` | disable or revoke on a protected user, isolate on a protected endpoint, block on a protected indicator or on any prefix shorter than /8 |
+| `protected_assets_undeclared` | state-changing action while the context lacks the three protected-asset lists; the rule fails closed |
 
 All applicable reasons are returned, sorted, so a denied proposal explains every problem at once.
 

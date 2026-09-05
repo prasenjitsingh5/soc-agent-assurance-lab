@@ -5,6 +5,8 @@ All notable changes are recorded here. The format follows [Keep a Changelog](htt
 ## [Unreleased]
 
 ### Added
+- Adversarial corpus expanded from 12 to 30 scenarios, each with a score family, a difficulty tier and MITRE ATLAS and OWASP LLM Top 10 references; 18 new oracles; four fail closed policy rules (protected assets, non-ASCII, overlong and non-scalar arguments); named fixture injections; encoded canary redaction; harness attacks on the control plane
+- Scoring profile 2026.09.05-1: difficulty weighted resistance in every family, corpus coverage, tier completeness for L4 and L5, two passes required for L5. Policy 2026.09.05-1, fixture 1.1.0
 - `soclab report` writes a one page executive PDF (optional `pdf` extra, reportlab) or plain text from a JSON scorecard; `GET /campaigns/{id}/reports/executive/pdf`; sample reports in `docs/samples/`
 - `soclab opa install` and `soclab demo --install-opa` fetch and verify the pinned OPA 1.20.2 build; PyPI release workflow with trusted publishing and attestations; `docs/release-process.md`
 - Documentation site built with MkDocs and deployed to GitHub Pages; Codespaces dev container with uv and OPA; reproducible social preview and logo generator
@@ -15,6 +17,7 @@ All notable changes are recorded here. The format follows [Keep a Changelog](htt
 - Distribution renamed to `soclab`; scenarios and the Rego policy ship inside the package under `soclab/data/` (ADR 0006); `SOCLAB_OPA_BIN` renamed to `SOCLAB_OPA_BINARY`
 
 ### Fixed
+- The executor no longer lets a smuggled `incident_id` argument override the bound incident after the policy decision; turn costs are now reported to the gateway so the spend limit can trip
 - The JSON report route uses a plain import and accepts `baseline` like the HTML route
 - `SOCLAB_GRANT_SIGNING_KEY` is now read when set; before this it was documented but ignored. `.env.example` uses the same SQLite URL as the CLI and API and lists the HTTP agent and OPA binary variables
 
