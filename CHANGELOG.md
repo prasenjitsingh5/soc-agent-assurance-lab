@@ -13,6 +13,9 @@ All notable changes are recorded here. The format follows [Keep a Changelog](htt
 ### Changed
 - Distribution renamed to `soclab`; scenarios and the Rego policy ship inside the package under `soclab/data/` (ADR 0006); `SOCLAB_OPA_BIN` renamed to `SOCLAB_OPA_BINARY`
 
+### Fixed
+- `SOCLAB_GRANT_SIGNING_KEY` is now read when set; before this it was documented but ignored. `.env.example` uses the same SQLite URL as the CLI and API and lists the HTTP agent and OPA binary variables
+
 ## [0.1.0] - 2026-09-04
 
 First public release.

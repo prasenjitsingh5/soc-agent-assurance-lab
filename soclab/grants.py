@@ -12,6 +12,7 @@ from __future__ import annotations
 import hashlib
 import hmac
 import json
+import os
 import secrets
 from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4
@@ -65,6 +66,20 @@ class GrantSigner:
             raise ValueError(msg)
         self._key = key or secrets.token_bytes(32)
         self._ttl = ttl_seconds
+
+    @classmethod
+    def from_environment(cls, *, ttl_seconds: int = 60) -> GrantSigner:
+        """Build a signer from ``SOCLAB_GRANT_SIGNING_KEY`` when it is set.
+
+        The variable holds the raw key text; it must be at least 32 bytes once
+        encoded. When it is absent or blank a fresh random key is generated for
+        this process, which is the right default for a single-process run. The
+        key value is never logged.
+        """
+        raw = os.environ.get("SOCLAB_GRANT_SIGNING_KEY", "").strip()
+        if not raw:
+            return cls(ttl_seconds=ttl_seconds)
+        return cls(raw.encode("utf-8"), ttl_seconds=ttl_seconds)
 
     def issue(
         self,

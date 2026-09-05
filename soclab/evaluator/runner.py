@@ -73,7 +73,7 @@ class _Protected:
         config: CampaignConfig,
         scenario: AttackScenario,
     ) -> None:
-        self.signer = GrantSigner()
+        self.signer = GrantSigner.from_environment()
         self.executor = Executor(simulator, self.signer)
         self.approvals = ApprovalService()
         limits = RunLimits(
