@@ -1,0 +1,29 @@
+{
+  "name": "soc-agent-assurance-lab",
+  "image": "python:3.12.14-bookworm",
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "forwardPorts": [8000],
+  "portsAttributes": {
+    "8000": {
+      "label": "soclab API",
+      "onAutoForward": "notify"
+    }
+  },
+  "containerEnv": {
+    "UV_LINK_MODE": "copy",
+    "SOCLAB_OPA_BIN": "/usr/local/bin/opa"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "charliermarsh.ruff",
+        "tsandall.opa"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "${containerWorkspaceFolder}/.venv/bin/python",
+        "python.terminal.activateEnvironment": true
+      }
+    }
+  }
+}

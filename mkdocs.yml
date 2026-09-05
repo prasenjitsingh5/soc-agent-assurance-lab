@@ -1,0 +1,102 @@
+site_name: SOC Agent Assurance Lab
+site_description: Measures whether an AI SOC agent has earned operational authority.
+site_url: https://prasenjitsingh5.github.io/soc-agent-assurance-lab/
+site_author: Prasenjit Singh
+repo_url: https://github.com/prasenjitsingh5/soc-agent-assurance-lab
+repo_name: prasenjitsingh5/soc-agent-assurance-lab
+edit_uri: edit/main/docs/
+copyright: Copyright 2026 Prasenjit Singh. Apache-2.0. Personal project, not affiliated with any employer.
+
+docs_dir: docs
+site_dir: site
+strict: true
+
+# Working documents stay in the repository but are not published as pages.
+exclude_docs: |
+  plans/
+  specs/
+  REFERENCE-INVENTORY.md
+
+theme:
+  name: material
+  logo: assets/logo.png
+  favicon: assets/logo.png
+  # No web fonts. Nothing on the site loads from Google Fonts or any other third party.
+  font: false
+  language: en
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - toc.follow
+
+extra_css:
+  - assets/extra.css
+
+# Only the built-in search plugin. No analytics, no version pickers, no external services.
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.superfences
+  - pymdownx.snippets:
+      base_path: [!relative $config_dir]
+      check_paths: true
+
+validation:
+  nav:
+    omitted_files: info
+  links:
+    not_found: warn
+    absolute_links: warn
+    unrecognized_links: warn
+
+nav:
+  - Home: index.md
+  - Quickstart: quickstart.md
+  - Architecture: architecture.md
+  - Threat model: threat-model.md
+  - Evaluation methodology: evaluation-methodology.md
+  - Policy guide: policy-guide.md
+  - Providers:
+      - Custom provider: custom-provider.md
+      - Provider compatibility: provider-compatibility.md
+  - Demo script: demo-script.md
+  - Limitations: limitations.md
+  - Engineering standards: engineering-standards.md
+  - Decision records:
+      - "ADR 0001: Single Python package": adr/0001-single-python-package.md
+      - "ADR 0002: Phased delivery": adr/0002-phased-delivery.md
+      - "ADR 0003: Signed execution grants": adr/0003-signed-execution-grants.md
+      - "ADR 0004: Oracles are named predicates": adr/0004-oracles-are-named-predicates.md
+      - "ADR 0005: Docker profile boundaries": adr/0005-docker-profile-boundaries.md
+  - Releases:
+      - "0.1.0 evidence": releases/0.1.0-evidence.md
+  - Project:
+      - Acceptance checklist: PROJECT-ACCEPTANCE.md
+      - Third-party notices: THIRD-PARTY-NOTICES.md
+      - Disclaimer: DISCLAIMER.md
+      - Security: SECURITY.md

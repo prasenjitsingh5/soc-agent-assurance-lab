@@ -27,6 +27,7 @@ tools/
 
 # Runtime output
 runs/
+site/
 reports/out/
 *.sqlite
 *.db

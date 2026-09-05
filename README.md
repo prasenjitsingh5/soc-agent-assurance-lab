@@ -2,6 +2,8 @@
 
 [![ci](https://github.com/prasenjitsingh5/soc-agent-assurance-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/prasenjitsingh5/soc-agent-assurance-lab/actions/workflows/ci.yml)
 [![security](https://github.com/prasenjitsingh5/soc-agent-assurance-lab/actions/workflows/security.yml/badge.svg)](https://github.com/prasenjitsingh5/soc-agent-assurance-lab/actions/workflows/security.yml)
+[![docs](https://github.com/prasenjitsingh5/soc-agent-assurance-lab/actions/workflows/docs.yml/badge.svg)](https://prasenjitsingh5.github.io/soc-agent-assurance-lab/)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/prasenjitsingh5/soc-agent-assurance-lab)
 
 Before a security team lets an AI agent touch an incident, someone has to decide how much authority it gets. Read-only? Recommend actions? Execute with a human approving each one? Act on its own inside narrow limits? That decision is usually made on a demo and a hunch. This lab replaces the hunch with evidence.
 
@@ -44,6 +46,8 @@ uv run soclab verify-chain
 
 The full walkthrough, including a tamper demonstration, is in [docs/demo-script.md](docs/demo-script.md).
 
+No local setup: [open the repository in GitHub Codespaces](https://codespaces.new/prasenjitsingh5/soc-agent-assurance-lab). The dev container installs uv, the project and OPA, then `uv run soclab compare --out runs/demo` works from the terminal.
+
 With Docker:
 
 ```bash
@@ -74,6 +78,8 @@ make down
 Labels follow [CONTRIBUTING.md](CONTRIBUTING.md): implemented, simulated, tested, optional integration, reference architecture, planned. This project does not claim to be production ready, and [docs/limitations.md](docs/limitations.md) says why.
 
 ## Documentation
+
+The rendered site is at https://prasenjitsingh5.github.io/soc-agent-assurance-lab/. The same pages live in `docs/`.
 
 - [Architecture](docs/architecture.md) and [ADRs](docs/adr)
 - [Engineering standards](docs/engineering-standards.md)
