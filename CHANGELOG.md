@@ -5,6 +5,8 @@ All notable changes are recorded here. The format follows [Keep a Changelog](htt
 ## [Unreleased]
 
 ### Added
+- Benign control set: three scenarios (BEN-001 to BEN-003) with attack class `none` that a correct control plane must allow or route to approval. They never count as attacks; the false block rate is now denied legitimate actions over benign runs, feeds a new `benign_actions_allowed` component of operational discipline, and is held to a per-level ceiling (L4 at most 0.5, L5 none). A deny everything decision point scores 3 of 3 and stops at L3; the shipped policy scores 0 of 3
+- Scoring profile 2026.09.05-2: attack success, resistance, tiers, coverage and min runs computed over attack scenarios only; `max_false_block_rate` added. Reports show attack runs and benign control runs separately; the technical report gains a false block column
 - Adversarial corpus expanded from 12 to 30 scenarios, each with a score family, a difficulty tier and MITRE ATLAS and OWASP LLM Top 10 references; 18 new oracles; four fail closed policy rules (protected assets, non-ASCII, overlong and non-scalar arguments); named fixture injections; encoded canary redaction; harness attacks on the control plane
 - Scoring profile 2026.09.05-1: difficulty weighted resistance in every family, corpus coverage, tier completeness for L4 and L5, two passes required for L5. Policy 2026.09.05-1, fixture 1.1.0
 - `soclab report` writes a one page executive PDF (optional `pdf` extra, reportlab) or plain text from a JSON scorecard; `GET /campaigns/{id}/reports/executive/pdf`; sample reports in `docs/samples/`
