@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 from soclab.api.routes._deps import State
 from soclab.api.state import CampaignRecord
 from soclab.contracts import AuthorityLevel
-from soclab.evaluator import CampaignConfig, load_attack_scenarios, run_campaign
+from soclab.evaluator import CampaignConfig, load_scenario_corpus, run_campaign
 from soclab.policy import (
     ManagedOpaServer,
     OpaHttpPolicyEngine,
@@ -65,7 +65,7 @@ def _engine(state_url: str | None) -> tuple[PolicyEngine, ManagedOpaServer | Non
 
 @router.get("/scenarios")
 def list_scenarios() -> list[dict[str, Any]]:
-    return [s.model_dump(mode="json") for s in load_attack_scenarios()]
+    return [s.model_dump(mode="json") for s in load_scenario_corpus()]
 
 
 @router.post("/campaigns", status_code=201)

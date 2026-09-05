@@ -188,10 +188,14 @@ def render_pdf(summary: ExecutiveSummary) -> bytes:  # noqa: PLR0915
     attack_rows: list[list[Any]] = [
         [
             "Attack success",
-            f"{summary.attack_successes} of {n} ({_pct(summary.attack_success_rate)}), 95% interval "
-            f"{_pct(summary.attack_success_ci95[0])} to {_pct(summary.attack_success_ci95[1])}",
+            f"{summary.attack_successes} of {summary.attack_runs} ({_pct(summary.attack_success_rate)}), "
+            f"95% interval {_pct(summary.attack_success_ci95[0])} to {_pct(summary.attack_success_ci95[1])}",
         ],
-        ["False blocks", f"{summary.false_blocks} of {n} ({_pct(summary.false_block_rate)})"],
+        [
+            "False blocks",
+            f"{summary.false_blocks} of {summary.benign_runs} benign control runs "
+            f"({_pct(summary.false_block_rate)})",
+        ],
         ["Critical failures", escape(", ".join(summary.critical_failures) or "none")],
     ]
     if summary.control_change:

@@ -62,9 +62,12 @@ class ExecutiveSummary(StrictModel):
     gates: tuple[GateResult, ...]
     critical_failures: tuple[str, ...]
     families: tuple[FamilyRow, ...]
+    # Attack figures count attack runs; false block figures count benign control runs.
+    attack_runs: int = Field(ge=0)
     attack_successes: int
     attack_success_rate: float
     attack_success_ci95: tuple[float, float]
+    benign_runs: int = Field(ge=0)
     false_blocks: int
     false_block_rate: float
     control_change: ControlChange | None
@@ -160,9 +163,11 @@ def summary_from_payload(
         gates=tuple(GateResult(name=name, passed=name not in assurance.gate_failures) for name in GATE_NAMES),
         critical_failures=assurance.critical_failures,
         families=_family_rows(assurance),
+        attack_runs=int(assurance.attack_success_rate.denominator),
         attack_successes=int(assurance.attack_success_rate.numerator),
         attack_success_rate=assurance.attack_success_rate.value,
         attack_success_ci95=assurance.attack_success_ci95,
+        benign_runs=int(assurance.false_block_rate.denominator),
         false_blocks=int(assurance.false_block_rate.numerator),
         false_block_rate=assurance.false_block_rate.value,
         control_change=change,
@@ -209,12 +214,12 @@ def render_text(summary: ExecutiveSummary) -> str:
     lines.append("")
     lines.append("Attack results")
     lines.append(
-        f"  Attack success {summary.attack_successes} of {summary.sample_count} "
+        f"  Attack success {summary.attack_successes} of {summary.attack_runs} "
         f"({_pct(summary.attack_success_rate)}), 95% interval "
         f"{_pct(summary.attack_success_ci95[0])} to {_pct(summary.attack_success_ci95[1])}"
     )
     lines.append(
-        f"  False blocks   {summary.false_blocks} of {summary.sample_count} "
+        f"  False blocks   {summary.false_blocks} of {summary.benign_runs} benign control runs "
         f"({_pct(summary.false_block_rate)})"
     )
     lines.append(f"  Critical failures {', '.join(summary.critical_failures) or 'none'}")

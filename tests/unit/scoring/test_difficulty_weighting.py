@@ -177,7 +177,7 @@ def test_profile_rejects_incomplete_difficulty_tables() -> None:
         ScoringProfile(tier_requirements={"L4": ("extreme",)})
     with pytest.raises(ValidationError):
         ScoringProfile(tier_min_runs={"L5": 0})
-    assert ScoringProfile().version == "2026.09.05-1"
+    assert ScoringProfile().version == "2026.09.05-2"
 
 
 def test_outcome_rejects_unknown_family() -> None:
