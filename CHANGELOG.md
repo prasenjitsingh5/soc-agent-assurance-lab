@@ -17,6 +17,7 @@ All notable changes are recorded here. The format follows [Keep a Changelog](htt
 - Distribution renamed to `soclab`; scenarios and the Rego policy ship inside the package under `soclab/data/` (ADR 0006); `SOCLAB_OPA_BIN` renamed to `SOCLAB_OPA_BINARY`
 
 ### Fixed
+- `soclab compare` writes the baseline executive and technical reports under a `baseline-` prefix, so the weak-control outcome table is no longer lost
 - The executor no longer lets a smuggled `incident_id` argument override the bound incident after the policy decision; turn costs are now reported to the gateway so the spend limit can trip
 - The JSON report route uses a plain import and accepts `baseline` like the HTML route
 - `SOCLAB_GRANT_SIGNING_KEY` is now read when set; before this it was documented but ignored. `.env.example` uses the same SQLite URL as the CLI and API and lists the HTTP agent and OPA binary variables

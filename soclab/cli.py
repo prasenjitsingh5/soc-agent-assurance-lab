@@ -261,12 +261,16 @@ def compare(
             )
             (out / f"{audience.value}.html").write_text(report.html, encoding="utf-8")
             (out / f"{audience.value}.json").write_text(report.json_payload, encoding="utf-8")
+        # The baseline outcome tables are evidence too. Write them under a prefix so a reader
+        # can see which attacks succeeded without the control plane, not only the summary line.
+        _write_reports(repository, baseline, base_score, out, "baseline")
         for label, score in (("baseline ", base_score), ("protected", prot_score)):
             typer.echo(
                 f"{label}: attack success {score.attack_success_rate.value:.0%}, "
                 f"authority {score.recommended_authority_level.value}"
             )
         typer.echo(f"reports  : {out / 'executive.html'} and {out / 'technical.html'}")
+        typer.echo(f"baseline : {out / 'baseline-executive.html'} and {out / 'baseline-technical.html'}")
 
     asyncio.run(_run())
 

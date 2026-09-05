@@ -53,11 +53,12 @@ Expected output:
 baseline : attack success 87%, authority L1
 protected: attack success 0%, authority L4
 reports  : runs/demo/executive.html and runs/demo/technical.html
+baseline : runs/demo/baseline-executive.html and runs/demo/baseline-technical.html
 ```
 
 Twenty-six of thirty attacks land on the baseline. The four that do not (unregistered tool, fabricated citations, malformed output, evidence tampering) are stopped by the orchestrator's schema and citation checks and by the hash chain, which exist in both configurations. Protected mode stops all thirty and earns L4. Bounded autonomy (L5) needs every scenario run at least twice: `uv run soclab campaign --mode protected --repeats 2`.
 
-Open `runs/demo/executive.html`. The first block is the recommended authority level and the gate status. The "What the controls changed" table is the baseline-to-protected comparison.
+Open `runs/demo/executive.html`. The baseline reports under the `baseline-` prefix carry the per-scenario outcome table for the weak-control run, so you can see which attacks landed and how. The first block is the recommended authority level and the gate status. The "What the controls changed" table is the baseline-to-protected comparison.
 
 ## 4. Prove the evidence is intact (30 seconds)
 
