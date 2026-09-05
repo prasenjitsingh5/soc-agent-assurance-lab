@@ -41,6 +41,7 @@ dev = [
     "ruff==0.16.6",
     "mypy==2.3.1",
     "types-PyYAML==6.0.12.20260815",
+    "types-reportlab==4.5.1.20260827",
     "httpx2==2.12.0",
 ]
 security = [
@@ -62,6 +63,10 @@ docs = [
     "mkdocs==1.6.1",
     "mkdocs-material==9.7.7",
     "pillow==12.3.0",
+]
+
+pdf = [
+    "reportlab==5.0.1",
 ]
 
 [project.urls]

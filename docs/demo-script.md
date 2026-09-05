@@ -25,11 +25,13 @@ From a checkout, for development:
 ```bash
 git clone https://github.com/prasenjitsingh5/soc-agent-assurance-lab.git
 cd soc-agent-assurance-lab
-uv sync --extra dev --extra security
+uv sync --extra dev --extra security --extra pdf
 uv run soclab opa install
 ```
 
 The rest of this script uses the checkout form, `uv run soclab`. After `pip install soclab` drop the `uv run`.
+
+The `pdf` extra is only needed for step 6.
 
 ## 2. See the attack surface (30 seconds)
 
@@ -73,7 +75,17 @@ uv run soclab verify-chain
 
 The affected run reports `INVALID at sequence N` and the command exits non-zero.
 
-## 6. Optional: bring your own model
+## 6. Export the one-page executive PDF (30 seconds)
+
+```bash
+uv run soclab report runs/demo/executive.json
+```
+
+This writes `runs/demo/executive.pdf`: the authority recommendation, the six mandatory gates, the five family scores with their intervals, the attack results and the chain head hash of every run, on one page. `--format text` prints the same summary to the terminal and needs no optional dependency. Without the `pdf` extra the command prints the install line and exits with code 1.
+
+Sample output from this exact demo, generated with the mock provider on synthetic data, is in [docs/samples](samples/README.md). Read it before installing anything.
+
+## 7. Optional: bring your own model
 
 ```bash
 export OPENAI_API_KEY=...

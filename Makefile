@@ -12,7 +12,7 @@ COMPOSE := docker compose -f infrastructure/docker/docker-compose.yml
 .PHONY: bootstrap opa-install lint format typecheck test test-fast policy-test security sbom build up down demo verify
 
 bootstrap:
-	$(UV) sync --extra dev --extra security --extra providers
+	$(UV) sync --extra dev --extra security --extra providers --extra pdf
 
 opa-install:
 	$(RUN) soclab opa install

@@ -1,4 +1,6 @@
 import hashlib
+import re
+from collections.abc import Callable
 from pathlib import Path
 
 import pytest
@@ -8,6 +10,7 @@ from soclab import __version__
 from soclab.cli import app
 from soclab.policy import OPA_VERSION, cached_opa_path, find_opa_binary, opa_asset
 from soclab.policy import opa_binary as opa_module
+from soclab.reports import PDF_EXTRA_HINT
 
 runner = CliRunner()
 
@@ -113,3 +116,56 @@ def test_demo_install_opa_flag_runs_installer_first(no_opa: Path, monkeypatch: p
     assert result.exit_code == 1
     text = result.output + result.stderr
     assert opa_asset().url in text and "sha256 mismatch" in text
+
+
+def _scorecard(tmp_path: Path) -> Path:
+    db = f"sqlite+pysqlite:///{tmp_path / 'e.sqlite'}"
+    out = tmp_path / "reports"
+    result = runner.invoke(
+        app,
+        ["campaign", "--mode", "baseline", "--scenario", "ATK-001", "--out", str(out), "--database-url", db],
+    )
+    assert result.exit_code == 0, result.output
+    return out / "baseline-executive.json"
+
+
+def test_report_text_needs_no_extra(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("SOURCE_DATE_EPOCH", "1788609600")
+    scorecard = _scorecard(tmp_path)
+    result = runner.invoke(app, ["report", str(scorecard), "--format", "text"])
+    assert result.exit_code == 0, result.output
+    assert "Executive assurance summary" in result.output
+    assert "Recommended authority level: L1 Observe" in result.output
+    assert "Date          2026-09-05 12:00 UTC" in result.output
+    assert "mock / mock-investigator-v1" in result.output
+    target = tmp_path / "summary.txt"
+    written = runner.invoke(app, ["report", str(scorecard), "--format", "text", "--out", str(target)])
+    assert written.exit_code == 0 and target.read_text(encoding="utf-8") == result.output
+
+
+def test_report_pdf_writes_next_to_the_scorecard(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, pdf_text: Callable[[bytes], str]
+) -> None:
+    pytest.importorskip("reportlab")
+    monkeypatch.setenv("SOURCE_DATE_EPOCH", "1788609600")
+    scorecard = _scorecard(tmp_path)
+    result = runner.invoke(app, ["report", str(scorecard)])
+    assert result.exit_code == 0, result.output
+    default_target = scorecard.with_suffix(".pdf")
+    assert default_target.exists() and str(default_target) in result.output
+    data = default_target.read_bytes()
+    assert data.startswith(b"%PDF-")
+    text = re.sub(r"\s+", " ", pdf_text(data))
+    assert "Executive assurance summary" in text
+    assert "L1 Observe" in text
+    explicit = tmp_path / "nested" / "summary.pdf"
+    again = runner.invoke(app, ["report", str(scorecard), "--format", "pdf", "--out", str(explicit)])
+    assert again.exit_code == 0 and explicit.read_bytes() == data
+
+
+def test_report_pdf_without_extra_says_what_to_install(tmp_path: Path, hide_reportlab: None) -> None:
+    scorecard = _scorecard(tmp_path)
+    result = runner.invoke(app, ["report", str(scorecard)])
+    assert result.exit_code == 1
+    assert PDF_EXTRA_HINT in result.output
+    assert not scorecard.with_suffix(".pdf").exists()

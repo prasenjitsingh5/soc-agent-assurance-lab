@@ -1,6 +1,6 @@
 # Third-party notices
 
-The lab depends on the following projects through their published packages. None of their source is copied into this repository. Licenses were reviewed on 2026-09-04; re-check when bumping versions.
+The lab depends on the following projects through their published packages. None of their source is copied into this repository. Licenses were reviewed on 2026-09-04, and the `pdf` extra on 2026-09-05; re-check when bumping versions.
 
 | Project | Use | License |
 |---|---|---|
@@ -11,6 +11,8 @@ The lab depends on the following projects through their published packages. None
 | PyYAML | scenario files | MIT |
 | Jinja2 | report templates | BSD-3-Clause |
 | Typer | command line | MIT |
+| ReportLab, with Pillow and charset-normalizer | one-page executive PDF, optional `pdf` extra | BSD-3-Clause, MIT-CMU, MIT |
+| types-reportlab | type stubs, development only | Apache-2.0 |
 | Open Policy Agent | policy decision point, run as a separate binary or container | Apache-2.0 |
 | openai (Python SDK) | OpenAI, Azure OpenAI, xAI and compatible adapters, optional | Apache-2.0 |
 | anthropic (Python SDK) | Anthropic adapter, optional | MIT |
