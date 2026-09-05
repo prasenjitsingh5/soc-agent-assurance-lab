@@ -29,14 +29,17 @@ The model proposes. The control gateway normalizes the proposal and builds the a
 
 ## Quick start
 
-Requires Python 3.12, [uv](https://docs.astral.sh/uv/) and the `opa` binary on PATH or in `tools/`.
+From a checkout, with Python 3.12 and [uv](https://docs.astral.sh/uv/):
 
 ```bash
 git clone https://github.com/prasenjitsingh5/soc-agent-assurance-lab.git
 cd soc-agent-assurance-lab
 uv sync --extra dev --extra security
+uv run soclab opa install
 uv run soclab compare --out runs/demo
 ```
+
+`soclab opa install` prints the URL and sha256 of the pinned Open Policy Agent build, downloads it into a per user cache and verifies it. Nothing is downloaded without that command or `--install-opa`. If `opa` is already on PATH the step is unnecessary.
 
 Open `runs/demo/executive.html`. Then prove the evidence is intact:
 
@@ -44,7 +47,13 @@ Open `runs/demo/executive.html`. Then prove the evidence is intact:
 uv run soclab verify-chain
 ```
 
-The full walkthrough, including a tamper demonstration, is in [docs/demo-script.md](docs/demo-script.md).
+From PyPI, once release 0.2.0 is published:
+
+```bash
+uvx soclab demo --install-opa
+```
+
+The full walkthrough, including a tamper demonstration, is in [docs/demo-script.md](docs/demo-script.md). Releases are cut as described in [docs/release-process.md](docs/release-process.md).
 
 No local setup: [open the repository in GitHub Codespaces](https://codespaces.new/prasenjitsingh5/soc-agent-assurance-lab). The dev container installs uv, the project and OPA, then `uv run soclab compare --out runs/demo` works from the terminal.
 

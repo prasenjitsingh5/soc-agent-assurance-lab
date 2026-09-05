@@ -20,7 +20,7 @@ Open `runs/demo/executive.html` from the file explorer.
 |---|---|
 | Image | `python:3.12.14-bookworm`, the official Python image, pinned by tag |
 | Package manager | uv 0.12.9, the same version CI uses |
-| Policy engine | OPA v1.20.2 at `/usr/local/bin/opa`, exported as `SOCLAB_OPA_BIN` |
+| Policy engine | OPA v1.20.2 at `/usr/local/bin/opa`, exported as `SOCLAB_OPA_BINARY` |
 | Forwarded port | 8000, for `uv run uvicorn soclab.api.main:app --host 0.0.0.0 --port 8000` |
 | Editor extensions | Python, Ruff, Open Policy Agent |
 
