@@ -1,0 +1,263 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/prasenjitsingh5/soc-agent-assurance-lab/schemas/agent-v1/response.schema.json",
+  "$defs": {
+    "AgentClaim": {
+      "additionalProperties": false,
+      "description": "A statement in a finding. Every id it cites must have appeared in a tool result.",
+      "properties": {
+        "text": {
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        },
+        "evidence_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "title": "AgentClaim",
+      "type": "object"
+    },
+    "AgentFinding": {
+      "additionalProperties": false,
+      "description": "The agent's account of what happened, returned at the form_finding stage.",
+      "properties": {
+        "summary": {
+          "minLength": 1,
+          "title": "Summary",
+          "type": "string"
+        },
+        "claims": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/AgentClaim"
+          },
+          "title": "Claims",
+          "type": "array"
+        },
+        "techniques": {
+          "default": [],
+          "description": "ATT&CK technique ids, for example T1078",
+          "items": {
+            "type": "string"
+          },
+          "title": "Techniques",
+          "type": "array"
+        }
+      },
+      "required": [
+        "summary"
+      ],
+      "title": "AgentFinding",
+      "type": "object"
+    },
+    "AgentProposal": {
+      "additionalProperties": false,
+      "description": "What the agent wants done. Exactly one of tool_calls or finding is present.",
+      "properties": {
+        "tool_calls": {
+          "default": [],
+          "description": "At most one call per turn in this contract version.",
+          "items": {
+            "$ref": "#/$defs/AgentToolCall"
+          },
+          "maxItems": 1,
+          "title": "Tool Calls",
+          "type": "array"
+        },
+        "finding": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AgentFinding"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "rationale": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Rationale",
+          "type": "string"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        },
+        "evidence_ids": {
+          "default": [],
+          "description": "Evidence ids that support the proposal.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "rationale"
+      ],
+      "title": "AgentProposal",
+      "type": "object"
+    },
+    "AgentRefusal": {
+      "additionalProperties": false,
+      "description": "A structured no. The orchestrator records it and takes no action.",
+      "properties": {
+        "code": {
+          "$ref": "#/$defs/RefusalCode"
+        },
+        "reason": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "reason"
+      ],
+      "title": "AgentRefusal",
+      "type": "object"
+    },
+    "AgentToolCall": {
+      "additionalProperties": false,
+      "description": "One tool the agent wants run, with arguments matching that tool's schema.",
+      "properties": {
+        "name": {
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "title": "Name",
+          "type": "string"
+        },
+        "arguments": {
+          "additionalProperties": true,
+          "title": "Arguments",
+          "type": "object"
+        }
+      },
+      "required": [
+        "name",
+        "arguments"
+      ],
+      "title": "AgentToolCall",
+      "type": "object"
+    },
+    "AgentUsage": {
+      "additionalProperties": false,
+      "description": "Token counts if the agent knows them. Absent usage is estimated and labeled as such.",
+      "properties": {
+        "input_tokens": {
+          "minimum": 0,
+          "title": "Input Tokens",
+          "type": "integer"
+        },
+        "output_tokens": {
+          "minimum": 0,
+          "title": "Output Tokens",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "input_tokens",
+        "output_tokens"
+      ],
+      "title": "AgentUsage",
+      "type": "object"
+    },
+    "RefusalCode": {
+      "description": "Why an agent declined to propose anything at this stage.",
+      "enum": [
+        "insufficient_evidence",
+        "out_of_scope",
+        "unsupported_stage",
+        "policy",
+        "error"
+      ],
+      "title": "RefusalCode",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "The POST reply. Exactly one of proposal or refusal is present.",
+  "properties": {
+    "contract": {
+      "const": "soclab.agent.v1",
+      "title": "Contract",
+      "type": "string"
+    },
+    "proposal": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/AgentProposal"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "refusal": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/AgentRefusal"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "model": {
+      "anyOf": [
+        {
+          "maxLength": 200,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Optional label for the model or version behind the agent. Recorded on every turn.",
+      "title": "Model"
+    },
+    "usage": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/AgentUsage"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "contract"
+  ],
+  "title": "AgentResponse",
+  "type": "object"
+}

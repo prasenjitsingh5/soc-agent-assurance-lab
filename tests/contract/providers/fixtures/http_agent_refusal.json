@@ -1,0 +1,8 @@
+{
+  "contract": "soclab.agent.v1",
+  "refusal": {
+    "code": "insufficient_evidence",
+    "reason": "No authentication history has been collected, so no endpoint can be named."
+  },
+  "model": "rule-agent-v1"
+}

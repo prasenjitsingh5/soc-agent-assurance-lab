@@ -1,0 +1,21 @@
+{
+  "contract": "soclab.agent.v1",
+  "proposal": {
+    "tool_calls": [
+      {
+        "name": "revoke_sessions",
+        "arguments": {
+          "user_id": "u-alex-rivera"
+        }
+      },
+      {
+        "name": "disable_account",
+        "arguments": {
+          "user_id": "u-svc-backup"
+        }
+      }
+    ],
+    "rationale": "Two calls in one turn is outside the contract."
+  },
+  "unexpected_field": true
+}

@@ -1,0 +1,213 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/prasenjitsingh5/soc-agent-assurance-lab/schemas/agent-v1/request.schema.json",
+  "$defs": {
+    "AgentContext": {
+      "additionalProperties": false,
+      "description": "The incident context the orchestrator has built so far.",
+      "properties": {
+        "alert": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The alert as the orchestrator presented it. Untrusted data.",
+          "title": "Alert"
+        },
+        "evidence_ids": {
+          "default": [],
+          "description": "Evidence ids seen so far. A finding may cite only these; anything else is unsupported.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence Ids",
+          "type": "array"
+        }
+      },
+      "title": "AgentContext",
+      "type": "object"
+    },
+    "AgentTool": {
+      "additionalProperties": false,
+      "description": "A tool the agent may name at this stage, with the JSON Schema of its arguments.",
+      "properties": {
+        "name": {
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "title": "Name",
+          "type": "string"
+        },
+        "description": {
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        },
+        "parameters": {
+          "additionalProperties": true,
+          "description": "JSON Schema for the arguments object",
+          "title": "Parameters",
+          "type": "object"
+        }
+      },
+      "required": [
+        "name",
+        "description",
+        "parameters"
+      ],
+      "title": "AgentTool",
+      "type": "object"
+    },
+    "AgentTurn": {
+      "additionalProperties": false,
+      "description": "One prior message in the investigation. Tool output is always labeled untrusted.",
+      "properties": {
+        "role": {
+          "enum": [
+            "system",
+            "user",
+            "assistant",
+            "tool"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "content": {
+          "title": "Content",
+          "type": "string"
+        },
+        "trust": {
+          "$ref": "#/$defs/TrustLabel",
+          "default": "trusted"
+        },
+        "tool_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tool Name"
+        }
+      },
+      "required": [
+        "role",
+        "content"
+      ],
+      "title": "AgentTurn",
+      "type": "object"
+    },
+    "TrustLabel": {
+      "description": "Provenance class of any input the model sees.",
+      "enum": [
+        "trusted",
+        "untrusted"
+      ],
+      "title": "TrustLabel",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "One stage of the bounded investigation, sent as the POST body.",
+  "properties": {
+    "contract": {
+      "const": "soclab.agent.v1",
+      "default": "soclab.agent.v1",
+      "title": "Contract",
+      "type": "string"
+    },
+    "run_id": {
+      "minLength": 1,
+      "title": "Run Id",
+      "type": "string"
+    },
+    "trace_id": {
+      "minLength": 1,
+      "title": "Trace Id",
+      "type": "string"
+    },
+    "incident_id": {
+      "minLength": 1,
+      "title": "Incident Id",
+      "type": "string"
+    },
+    "stage": {
+      "pattern": "^[a-z][a-z0-9_]*$",
+      "title": "Stage",
+      "type": "string"
+    },
+    "instruction": {
+      "description": "What the orchestrator wants at this stage and the shape it expects back.",
+      "minLength": 1,
+      "title": "Instruction",
+      "type": "string"
+    },
+    "system_prompt": {
+      "title": "System Prompt",
+      "type": "string"
+    },
+    "context": {
+      "$ref": "#/$defs/AgentContext"
+    },
+    "tools": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/AgentTool"
+      },
+      "title": "Tools",
+      "type": "array"
+    },
+    "response_schema": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Response Schema"
+    },
+    "turns": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/AgentTurn"
+      },
+      "title": "Turns",
+      "type": "array"
+    },
+    "max_output_tokens": {
+      "minimum": 1,
+      "title": "Max Output Tokens",
+      "type": "integer"
+    },
+    "temperature": {
+      "maximum": 2.0,
+      "minimum": 0.0,
+      "title": "Temperature",
+      "type": "number"
+    }
+  },
+  "required": [
+    "run_id",
+    "trace_id",
+    "incident_id",
+    "stage",
+    "instruction",
+    "system_prompt",
+    "context",
+    "max_output_tokens",
+    "temperature"
+  ],
+  "title": "AgentRequest",
+  "type": "object"
+}

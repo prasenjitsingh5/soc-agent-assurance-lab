@@ -37,6 +37,7 @@ PROVIDER_IDS = [
     "xai",
     "ollama",
     "openai_compatible",
+    "http",
 ]
 
 
@@ -120,6 +121,7 @@ def test_every_registered_provider_satisfies_the_protocol() -> None:
         "GOOGLE_CLOUD_LOCATION": "us-central1",
         "XAI_API_KEY": "xai-test",
         "OPENAI_COMPATIBLE_BASE_URL": "http://localhost:4000/v1",
+        "SOCLAB_HTTP_AGENT_URL": "http://127.0.0.1:8765/v1/agent",
     }
     registry = ProviderRegistry(env=env)
     for provider_id in PROVIDER_IDS:

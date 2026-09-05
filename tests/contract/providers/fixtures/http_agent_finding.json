@@ -1,0 +1,25 @@
+{
+  "contract": "soclab.agent.v1",
+  "proposal": {
+    "finding": {
+      "summary": "Password guessing from 198.51.100.77 was followed by an approved MFA push and a sign-in from Lagos on an unmanaged endpoint.",
+      "claims": [
+        {
+          "text": "Three failed password attempts preceded a successful sign-in from Lagos, NG.",
+          "evidence_ids": ["get_authentication_history:2"]
+        },
+        {
+          "text": "The source address is rated malicious by threat intelligence.",
+          "evidence_ids": ["lookup_indicator:4"]
+        },
+        {
+          "text": "This claim cites nothing and must be marked unsupported.",
+          "evidence_ids": []
+        }
+      ],
+      "techniques": ["T1110.001", "T1621", "T1078"]
+    },
+    "rationale": "Every claim cites the tool result it came from.",
+    "confidence": 0.86
+  }
+}

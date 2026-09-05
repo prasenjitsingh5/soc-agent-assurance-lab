@@ -248,6 +248,9 @@ class _Run:
             messages=(*self.messages, instruction),
             tools=TOOL_SPECS if stage in COLLECTION_STAGES else (),
             response_schema=schema,
+            run_id=str(self.run_id),
+            trace_id=self.trace_id,
+            incident_id=self.incident_id,
         )
 
     def _evidence_ids(self) -> set[str]:
