@@ -131,7 +131,7 @@ def investigate(
                 from soclab.grants import GrantSigner
 
                 engine, server = _policy_engine()
-                signer = GrantSigner()
+                signer = GrantSigner.from_environment()
                 gateway = ControlGateway(
                     config=GatewayConfig(
                         incident_id=simulator.incident_id,
