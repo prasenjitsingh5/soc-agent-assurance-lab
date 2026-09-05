@@ -63,6 +63,9 @@ def test_compare_writes_both_reports(tmp_path: Path) -> None:
     assert "protected: attack success 0%" in result.output
     assert (tmp_path / "cmp" / "executive.html").exists()
     assert (tmp_path / "cmp" / "technical.json").exists()
+    assert (tmp_path / "cmp" / "baseline-technical.html").exists()
+    assert (tmp_path / "cmp" / "baseline-executive.json").exists()
+    assert "baseline-technical.html" in result.output
 
 
 def test_demo_without_opa_says_exactly_what_to_run(no_opa: Path) -> None:
