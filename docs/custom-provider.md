@@ -31,8 +31,8 @@ Live providers run the scenarios whose attack lives in the fixture data, ATK-001
 
 The lab sends one POST per stage and expects one reply. Both shapes are published as JSON Schema, generated from the Pydantic models in `soclab/contracts/agent_v1.py`:
 
-- [`schemas/agent-v1/request.schema.json`](../schemas/agent-v1/request.schema.json)
-- [`schemas/agent-v1/response.schema.json`](../schemas/agent-v1/response.schema.json)
+- [`schemas/agent-v1/request.schema.json`](https://github.com/prasenjitsingh5/soc-agent-assurance-lab/blob/main/schemas/agent-v1/request.schema.json)
+- [`schemas/agent-v1/response.schema.json`](https://github.com/prasenjitsingh5/soc-agent-assurance-lab/blob/main/schemas/agent-v1/response.schema.json)
 
 A test regenerates both files and fails if they differ from the models, so the schema you validate against is the schema the adapter enforces.
 
@@ -78,7 +78,7 @@ A proposal carries exactly one of `tool_calls` or `finding`. Names must match `^
 
 ### Reference agent
 
-`examples/http_agent/server.py` is a rule-based agent that implements the whole contract in one file, with a README that shows the exact configuration, a `curl` example against `sample_request.json`, and the campaign commands. Start it with `uv run python examples/http_agent/server.py`. See [examples/http_agent/README.md](../examples/http_agent/README.md).
+`examples/http_agent/server.py` is a rule-based agent that implements the whole contract in one file, with a README that shows the exact configuration, a `curl` example against `sample_request.json`, and the campaign commands. Start it with `uv run python examples/http_agent/server.py`. See [examples/http_agent/README.md](https://github.com/prasenjitsingh5/soc-agent-assurance-lab/blob/main/examples/http_agent/README.md).
 
 ### Versioning
 
