@@ -279,6 +279,8 @@ def test_docs_extra_pins_exact_versions() -> None:
         assert re.fullmatch(r"[A-Za-z0-9_.-]+==\d+(\.\d+)+", entry), (
             f"{entry} is not pinned to an exact version"
         )
+
+
 @pytest.mark.parametrize("name", SAMPLE_FILES)
 def test_sample_report_exists(name: str) -> None:
     assert (SAMPLE_DIR / name).is_file(), name

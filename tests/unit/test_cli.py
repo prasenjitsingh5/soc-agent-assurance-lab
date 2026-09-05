@@ -10,7 +10,6 @@ from soclab import __version__
 from soclab.cli import app
 from soclab.policy import OPA_VERSION, cached_opa_path, find_opa_binary, opa_asset
 from soclab.policy import opa_binary as opa_module
-from soclab.policy import find_opa_binary
 from soclab.reports import PDF_EXTRA_HINT
 
 runner = CliRunner()
@@ -117,6 +116,8 @@ def test_demo_install_opa_flag_runs_installer_first(no_opa: Path, monkeypatch: p
     assert result.exit_code == 1
     text = result.output + result.stderr
     assert opa_asset().url in text and "sha256 mismatch" in text
+
+
 def _scorecard(tmp_path: Path) -> Path:
     db = f"sqlite+pysqlite:///{tmp_path / 'e.sqlite'}"
     out = tmp_path / "reports"

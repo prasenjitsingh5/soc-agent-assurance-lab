@@ -47,6 +47,15 @@ Open `runs/demo/executive.html`. Then prove the evidence is intact:
 uv run soclab verify-chain
 ```
 
+One page for the people who decide:
+
+```bash
+uv sync --extra pdf
+uv run soclab report runs/demo/executive.json
+```
+
+This writes `runs/demo/executive.pdf`. To see the output before installing anything, the reports from this exact demo are in [docs/samples](docs/samples/README.md), generated with the mock provider on synthetic data.
+
 From PyPI, once release 0.2.0 is published:
 
 ```bash
@@ -79,7 +88,7 @@ make down
 | Five-family scoring, mandatory gates, confidence intervals, authority recommendation | implemented |
 | Provider adapters for eight paths, plus an HTTP path for your own agent | implemented, contract-tested against recorded fixtures; HTTP path tested end to end against the reference agent |
 | OpenInference-style telemetry, MLflow and Phoenix adapters | implemented, optional integration |
-| Executive and technical reports, CLI, versioned API | implemented |
+| Executive and technical reports, one page executive PDF, CLI, versioned API | implemented |
 | Docker Compose profile with OPA, PostgreSQL, Redis | implemented |
 | Role-based web views and scenario replay | planned, Phase 2 |
 | Azure reference architecture in Terraform | planned, Phase 3 |
@@ -110,6 +119,7 @@ The rendered site is at https://prasenjitsingh5.github.io/soc-agent-assurance-la
 - [Policy guide](docs/policy-guide.md)
 - [Provider compatibility](docs/provider-compatibility.md) and [bringing your own agent or adding a provider](docs/custom-provider.md)
 - [Demo script](docs/demo-script.md)
+- [Sample reports](docs/samples/README.md), mock provider, synthetic data
 - [Limitations and known risks](docs/limitations.md)
 - [Design specification](docs/specs/2026-09-04-soc-agent-assurance-lab-design.md) and [acceptance checklist](docs/PROJECT-ACCEPTANCE.md)
 - [Third-party notices](docs/THIRD-PARTY-NOTICES.md)

@@ -5,6 +5,7 @@ All notable changes are recorded here. The format follows [Keep a Changelog](htt
 ## [Unreleased]
 
 ### Added
+- `soclab report` writes a one page executive PDF (optional `pdf` extra, reportlab) or plain text from a JSON scorecard; `GET /campaigns/{id}/reports/executive/pdf`; sample reports in `docs/samples/`
 - `soclab opa install` and `soclab demo --install-opa` fetch and verify the pinned OPA 1.20.2 build; PyPI release workflow with trusted publishing and attestations; `docs/release-process.md`
 - Documentation site built with MkDocs and deployed to GitHub Pages; Codespaces dev container with uv and OPA; reproducible social preview and logo generator
 - `http` provider: point the lab at any SOC agent over HTTP with the versioned `soclab.agent.v1` contract, published JSON Schema in `schemas/agent-v1/`, fail closed validation and a rule based reference agent in `examples/http_agent/`; `POST /api/v1/campaigns` accepts `provider_id` and `model`
@@ -14,6 +15,7 @@ All notable changes are recorded here. The format follows [Keep a Changelog](htt
 - Distribution renamed to `soclab`; scenarios and the Rego policy ship inside the package under `soclab/data/` (ADR 0006); `SOCLAB_OPA_BIN` renamed to `SOCLAB_OPA_BINARY`
 
 ### Fixed
+- The JSON report route uses a plain import and accepts `baseline` like the HTML route
 - `SOCLAB_GRANT_SIGNING_KEY` is now read when set; before this it was documented but ignored. `.env.example` uses the same SQLite URL as the CLI and API and lists the HTTP agent and OPA binary variables
 
 ## [0.1.0] - 2026-09-04
