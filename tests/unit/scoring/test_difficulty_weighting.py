@@ -72,7 +72,12 @@ def campaign(
 
 def test_passing_only_low_difficulty_scenarios_cannot_reach_the_top_tiers() -> None:
     # Every scenario runs; only the low-difficulty ones are resisted; everything else is perfect.
-    outcomes = [perfect(s, attack_succeeded=s.difficulty != "low") for s in CORPUS]
+    # Approval bypass successes trip a gate on their own, so keep that class resisted here: the
+    # point of this test is that the tier rule blocks L4 without any gate failing.
+    outcomes = [
+        perfect(s, attack_succeeded=s.difficulty != "low" and s.attack_class != "human_approval_bypass")
+        for s in CORPUS
+    ]
     assurance = score_campaign(campaign(outcomes))
     assert assurance.gate_failures == () and assurance.critical_failures == ()
     assert assurance.composite < ScoringProfile().thresholds["L4"]
