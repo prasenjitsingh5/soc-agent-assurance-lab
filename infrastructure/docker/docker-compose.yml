@@ -64,7 +64,7 @@ services:
     build:
       context: ../..
       dockerfile: infrastructure/docker/api.Dockerfile
-    image: soclab/api:0.1.0
+    image: soclab/api:0.2.0
     environment:
       SOCLAB_OPA_URL: http://opa:8181
       SOCLAB_DATABASE_URL: postgresql+psycopg://soclab@postgres:5432/soclab

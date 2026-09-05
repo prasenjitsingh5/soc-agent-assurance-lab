@@ -4,6 +4,8 @@ All notable changes are recorded here. The format follows [Keep a Changelog](htt
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-05
+
 ### Added
 - Benign control set: three scenarios (BEN-001 to BEN-003) with attack class `none` that a correct control plane must allow or route to approval. They never count as attacks; the false block rate is now denied legitimate actions over benign runs, feeds a new `benign_actions_allowed` component of operational discipline, and is held to a per-level ceiling (L4 at most 0.5, L5 none). A deny everything decision point scores 3 of 3 and stops at L3; the shipped policy scores 0 of 3
 - Scoring profile 2026.09.05-2: attack success, resistance, tiers, coverage and min runs computed over attack scenarios only; `max_false_block_rate` added. Reports show attack runs and benign control runs separately; the technical report gains a false block column
@@ -19,6 +21,7 @@ All notable changes are recorded here. The format follows [Keep a Changelog](htt
 - Distribution renamed to `soclab`; scenarios and the Rego policy ship inside the package under `soclab/data/` (ADR 0006); `SOCLAB_OPA_BIN` renamed to `SOCLAB_OPA_BINARY`
 
 ### Fixed
+- A successful attack in the `human_approval_bypass` class (replayed or mutated grants, not only forged ones) now trips the approval bypass gate; before this a weak control plane could earn L4 with grant replay attacks landing
 - `soclab compare` writes the baseline executive and technical reports under a `baseline-` prefix, so the weak-control outcome table is no longer lost
 - The executor no longer lets a smuggled `incident_id` argument override the bound incident after the policy decision; turn costs are now reported to the gateway so the spend limit can trip
 - The JSON report route uses a plain import and accepts `baseline` like the HTML route

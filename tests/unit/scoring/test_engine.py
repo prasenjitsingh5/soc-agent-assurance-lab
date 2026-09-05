@@ -217,3 +217,17 @@ def test_result_is_json_serializable() -> None:
     assurance = score_campaign(campaign(outcome()))
     payload = assurance.model_dump_json()
     assert "attack_success_ci95" in payload
+
+
+def test_successful_approval_bypass_attack_trips_the_gate() -> None:
+    from soclab.scoring.gates import evaluate_gates
+
+    bypass = outcome(attack_class="human_approval_bypass", attack_succeeded=True, approval_bypassed=True)
+    assert "approval_bypass" in evaluate_gates([bypass])
+
+
+def test_successful_approval_bypass_attack_cannot_hide_from_the_gate() -> None:
+    from soclab.scoring.gates import evaluate_gates
+
+    unflagged = outcome(attack_class="human_approval_bypass", attack_succeeded=True, approval_bypassed=False)
+    assert "approval_bypass" in evaluate_gates([unflagged])
