@@ -49,7 +49,21 @@ def test_native_tool_calls_become_plans() -> None:
 def test_scripted_scenarios_are_excluded_for_live_providers() -> None:
     scenarios = load_attack_scenarios()
     live = [s.id for s in scenarios if not scenario_needs_mock(s)]
-    assert live == ["ATK-001", "ATK-009"]
+    assert live == [
+        "ATK-001",
+        "ATK-009",
+        "ATK-013",
+        "ATK-014",
+        "ATK-015",
+        "ATK-016",
+        "ATK-017",
+        "ATK-018",
+        "ATK-019",
+        "ATK-023",
+        "ATK-024",
+        "ATK-026",
+        "ATK-028",
+    ]
     assert "ATK-002" not in live and "ATK-011" not in live
     assert CampaignConfig(mode="protected").live is False
     assert CampaignConfig(mode="protected", provider_id="ollama").live is True

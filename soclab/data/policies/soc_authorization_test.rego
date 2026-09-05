@@ -9,6 +9,8 @@ tools := {
 	"search_siem_events": {"risk_tier": "read_only", "allowed_arguments": ["query"]},
 	"revoke_sessions": {"risk_tier": "low", "allowed_arguments": ["user_id"]},
 	"disable_account": {"risk_tier": "high", "allowed_arguments": ["user_id"]},
+	"isolate_endpoint": {"risk_tier": "high", "allowed_arguments": ["endpoint_id"]},
+	"block_indicator": {"risk_tier": "high", "allowed_arguments": ["indicator"]},
 }
 
 base_context := {
@@ -25,6 +27,11 @@ base_context := {
 		"max_elapsed_seconds": 600,
 	},
 	"approval": {"present": false, "valid": false},
+	"protected_assets": {
+		"user_ids": ["u-svc-backup"],
+		"endpoint_ids": ["ep-dc-01"],
+		"indicators": ["203.0.113.10", "0.0.0.0/0"],
+	},
 	"degraded": false,
 }
 
@@ -42,6 +49,11 @@ base_proposal := {
 with_proposal(overrides) := object.union(base_proposal, overrides)
 
 with_context(overrides) := object.union(base_context, overrides)
+
+# object.union merges nested objects, so a different tool needs its arguments replaced, not merged.
+proposal_for(tool, args) := object.union(object.remove(base_proposal, ["arguments"]), {"tool_name": tool, "arguments": args})
+
+context_with_assets(assets) := object.union(object.remove(base_context, ["protected_assets"]), {"protected_assets": assets})
 
 # --------------------------------------------------------------------------- read-only
 test_read_only_allowed_with_redaction if {
@@ -123,6 +135,15 @@ test_limit_exceeded_denied if {
 	"limit_exceeded" in r.reason_codes
 }
 
+test_cost_limit_exceeded_denied if {
+	r := authorization.result with input as {
+		"proposal": base_proposal,
+		"context": with_context({"limits": object.union(base_context.limits, {"cost_used_usd": 5})}),
+	}
+	r.decision == "deny"
+	"limit_exceeded" in r.reason_codes
+}
+
 test_degraded_mode_blocks_state_change_but_not_reads if {
 	blocked := authorization.result with input as {
 		"proposal": with_proposal({"tool_name": "revoke_sessions"}),
@@ -136,6 +157,151 @@ test_degraded_mode_blocks_state_change_but_not_reads if {
 		"context": with_context({"degraded": true}),
 	}
 	allowed.decision == "allow_with_obligations"
+}
+
+# --------------------------------------------------------------------------- argument shape
+test_nested_argument_denied if {
+	r := authorization.result with input as {
+		"proposal": with_proposal({"arguments": {"user_id": {"$ref": "u-alex-rivera"}}}),
+		"context": base_context,
+	}
+	r.decision == "deny"
+	"argument_not_scalar" in r.reason_codes
+}
+
+test_array_argument_denied if {
+	r := authorization.result with input as {
+		"proposal": with_proposal({"arguments": {"user_id": ["u-alex-rivera", "u-svc-backup"]}}),
+		"context": base_context,
+	}
+	r.decision == "deny"
+	"argument_not_scalar" in r.reason_codes
+}
+
+test_overlong_argument_denied if {
+	long := concat("", ["u-alex-rivera ", concat("", [c | some i in numbers.range(1, 600); c := "x"])])
+	r := authorization.result with input as {
+		"proposal": proposal_for("search_siem_events", {"query": long}),
+		"context": base_context,
+	}
+	r.decision == "deny"
+	"argument_too_long" in r.reason_codes
+}
+
+test_argument_at_limit_allowed if {
+	ok := concat("", [c | some i in numbers.range(1, 512); c := "x"])
+	r := authorization.result with input as {
+		"proposal": proposal_for("search_siem_events", {"query": ok}),
+		"context": base_context,
+	}
+	r.decision == "allow_with_obligations"
+}
+
+test_non_ascii_identifier_denied if {
+	# Cyrillic small a in place of Latin a.
+	r := authorization.result with input as {
+		"proposal": proposal_for("disable_account", {"user_id": "u-svc-bаckup"}),
+		"context": base_context,
+	}
+	r.decision == "deny"
+	"non_ascii_argument" in r.reason_codes
+	not "protected_asset" in r.reason_codes
+}
+
+test_integer_argument_is_scalar if {
+	r := authorization.result with input as {
+		"proposal": with_proposal({"arguments": {"user_id": "u-alex-rivera", "limit": 5}}),
+		"context": with_context({"tools": object.union(tools, {"get_identity_profile": {"risk_tier": "read_only", "allowed_arguments": ["user_id", "limit"]}})}),
+	}
+	r.decision == "allow_with_obligations"
+}
+
+# --------------------------------------------------------------------------- protected assets
+test_protected_account_cannot_be_disabled_even_with_approval if {
+	r := authorization.result with input as {
+		"proposal": proposal_for("disable_account", {"user_id": "u-svc-backup"}),
+		"context": with_context({"approval": {"present": true, "valid": true}}),
+	}
+	r.decision == "deny"
+	"protected_asset" in r.reason_codes
+}
+
+test_protected_account_sessions_cannot_be_revoked if {
+	r := authorization.result with input as {
+		"proposal": proposal_for("revoke_sessions", {"user_id": "u-svc-backup"}),
+		"context": with_context({"authority_level": "L5"}),
+	}
+	r.decision == "deny"
+	"protected_asset" in r.reason_codes
+}
+
+test_protected_endpoint_cannot_be_isolated if {
+	r := authorization.result with input as {
+		"proposal": proposal_for("isolate_endpoint", {"endpoint_id": "ep-dc-01"}),
+		"context": base_context,
+	}
+	r.decision == "deny"
+	"protected_asset" in r.reason_codes
+}
+
+test_protected_indicator_cannot_be_blocked if {
+	r := authorization.result with input as {
+		"proposal": proposal_for("block_indicator", {"indicator": "203.0.113.10"}),
+		"context": base_context,
+	}
+	r.decision == "deny"
+	"protected_asset" in r.reason_codes
+}
+
+test_catch_all_block_denied_without_being_listed if {
+	r := authorization.result with input as {
+		"proposal": proposal_for("block_indicator", {"indicator": "10.0.0.0/0"}),
+		"context": base_context,
+	}
+	r.decision == "deny"
+	"protected_asset" in r.reason_codes
+}
+
+test_specific_block_still_escalates if {
+	r := authorization.result with input as {
+		"proposal": proposal_for("block_indicator", {"indicator": "198.51.100.77"}),
+		"context": base_context,
+	}
+	r.decision == "require_approval"
+}
+
+test_protected_asset_list_missing_fails_closed_for_state_change if {
+	r := authorization.result with input as {
+		"proposal": proposal_for("revoke_sessions", {"user_id": "u-alex-rivera"}),
+		"context": object.remove(base_context, ["protected_assets"]),
+	}
+	r.decision == "deny"
+	"protected_assets_undeclared" in r.reason_codes
+}
+
+test_protected_asset_list_partial_fails_closed if {
+	r := authorization.result with input as {
+		"proposal": proposal_for("revoke_sessions", {"user_id": "u-alex-rivera"}),
+		"context": context_with_assets({"user_ids": ["u-svc-backup"]}),
+	}
+	r.decision == "deny"
+	"protected_assets_undeclared" in r.reason_codes
+}
+
+test_protected_asset_list_missing_does_not_block_reads if {
+	r := authorization.result with input as {
+		"proposal": base_proposal,
+		"context": object.remove(base_context, ["protected_assets"]),
+	}
+	r.decision == "allow_with_obligations"
+}
+
+test_empty_protected_asset_lists_are_a_valid_declaration if {
+	r := authorization.result with input as {
+		"proposal": proposal_for("revoke_sessions", {"user_id": "u-svc-backup"}),
+		"context": context_with_assets({"user_ids": [], "endpoint_ids": [], "indicators": []}),
+	}
+	r.decision == "require_approval"
 }
 
 # --------------------------------------------------------------------------- authority ladder

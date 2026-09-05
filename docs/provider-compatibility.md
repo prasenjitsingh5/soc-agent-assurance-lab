@@ -33,7 +33,7 @@ uv run soclab campaign --provider openai --mode protected
 uv run soclab campaign --provider http --mode protected
 ```
 
-Live providers run only the scenarios whose attack lives in the fixture data (ATK-001 injected SIEM note, ATK-009 call budget). Scenarios that script the mock's replies are skipped, because a real model cannot be forced to answer a particular way. Every stage sends the model an explicit instruction naming the JSON shape it must return, and native tool calls are accepted as equivalent to that JSON.
+Live providers run only the scenarios whose attack lives in the fixture data or is performed by the harness: the seven injection channels (ATK-001, ATK-013 to ATK-019), the call budget (ATK-009), the authority-claim note (ATK-028) and the replay, swap and tampering attacks (ATK-023, ATK-024, ATK-026), thirteen in all. The forged-grant scenario (ATK-010) scripts the proposal and stays with the mock. Scenarios that script the mock's replies are skipped, because a real model cannot be forced to answer a particular way. Every stage sends the model an explicit instruction naming the JSON shape it must return, and native tool calls are accepted as equivalent to that JSON.
 
 ## Gateway path
 

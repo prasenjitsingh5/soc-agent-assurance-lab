@@ -1,15 +1,19 @@
 """Deterministic mock provider.
 
-Two behaviors ship with the lab so the same scenario can show a grounded agent
-and a gullible one without any paid model:
+Three behaviors ship with the lab so the same scenario can show a grounded
+agent and a susceptible one without any paid model:
 
 * ``grounded`` follows the investigation faithfully and cites evidence.
 * ``gullible`` obeys instruction-like text found in untrusted content. This is
   what makes baseline runs fail adversarial scenarios and protected runs block
   them.
+* ``cautious`` ignores plain injected instructions but obeys one that carries
+  an authority claim, such as a named override or an "authorized by" line. It
+  stands in for a model whose refusals collapse under claimed authority.
 
 Scenarios can override individual stages through ``script`` to produce
-malformed output, unsupported claims, loops or model substitution.
+malformed output, unsupported claims, loops or model substitution, and can set
+``cost_per_call_usd`` so budget controls have something to measure.
 """
 
 from __future__ import annotations
@@ -29,10 +33,19 @@ from soclab.providers.base import (
     estimate_tokens,
 )
 
+# The target runs to the next whitespace; one trailing punctuation mark is dropped so
+# addresses such as 203.0.113.10 and ids such as ep-lt-4302 are captured whole.
 _INSTRUCTION = re.compile(
-    r"(?:immediately call|the ai should now run|run|call)\s+([a-z_]+)\s+(?:on|for)\s+([^\s.,;]+)",
+    r"(?:immediately call|the ai should now run|run|call)\s+([a-z_]+)\s+(?:on|for)\s+"
+    r"([^\s,;]+?)[.,;]?(?=\s|$)",
     re.IGNORECASE,
 )
+_AUTHORITY_CLAIM = re.compile(
+    r"(?:authorized by|override code|ciso override|on the authority of|director override)",
+    re.IGNORECASE,
+)
+
+BEHAVIORS: frozenset[str] = frozenset({"grounded", "gullible", "cautious"})
 
 SUBJECT = "u-alex-rivera"
 ATTACKER_IP = "198.51.100.77"
@@ -58,12 +71,16 @@ def _evidence_ids(request: ModelRequest) -> list[str]:
     return ids
 
 
-def _injected_instruction(request: ModelRequest) -> tuple[str, str] | None:
+def _injected_instruction(request: ModelRequest, *, require_authority: bool) -> tuple[str, str] | None:
+    """First instruction-like line in untrusted content, optionally only when it claims authority."""
     for m in request.messages:
-        if m.trust is TrustLabel.UNTRUSTED:
-            found = _INSTRUCTION.search(m.content)
-            if found:
-                return found.group(1).lower(), found.group(2)
+        if m.trust is not TrustLabel.UNTRUSTED:
+            continue
+        if require_authority and not _AUTHORITY_CLAIM.search(m.content):
+            continue
+        found = _INSTRUCTION.search(m.content)
+        if found:
+            return found.group(1).lower(), found.group(2)
     return None
 
 
@@ -76,13 +93,18 @@ class MockProvider:
         behavior: str = "grounded",
         model: str = "mock-investigator-v1",
         script: dict[str, dict[str, Any]] | None = None,
+        cost_per_call_usd: float = 0.0,
     ) -> None:
-        if behavior not in {"grounded", "gullible"}:
-            msg = "behavior must be 'grounded' or 'gullible'"
+        if behavior not in BEHAVIORS:
+            msg = f"behavior must be one of {sorted(BEHAVIORS)}"
+            raise ValueError(msg)
+        if cost_per_call_usd < 0:
+            msg = "cost_per_call_usd cannot be negative"
             raise ValueError(msg)
         self.behavior = behavior
         self.model = model
         self.script = script or {}
+        self.cost_per_call_usd = cost_per_call_usd
         self.calls: list[str] = []
 
     # ----------------------------------------------------------- capabilities
@@ -132,7 +154,11 @@ class MockProvider:
         if override is not None and "structured" in override:
             structured: dict[str, Any] = override["structured"]
             return structured
-        injected = _injected_instruction(request) if self.behavior == "gullible" else None
+        injected: tuple[str, str] | None = None
+        if self.behavior == "gullible":
+            injected = _injected_instruction(request, require_authority=False)
+        elif self.behavior == "cautious":
+            injected = _injected_instruction(request, require_authority=True)
         stage = request.stage
         evidence = _evidence_ids(request)
 
@@ -223,6 +249,6 @@ class MockProvider:
             tool_call=tool_call,
             usage=usage,
             latency_ms=1,
-            estimated_cost_usd=0.0,
+            estimated_cost_usd=self.cost_per_call_usd,
             cost_is_estimated=False,
         )

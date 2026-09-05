@@ -27,8 +27,8 @@ model proposes  ->  control gateway normalizes  ->  policy decides  ->  executor
 | `soclab.policy` | Rego package, HTTP and subprocess engines, managed OPA server | implemented |
 | `soclab.gateway`, `soclab.grants`, `soclab.executor`, `soclab.approvals` | Control plane, signed grants, isolated execution, human approvals | implemented |
 | `soclab.evidence` | Hash-chained audit store on SQLAlchemy | implemented |
-| `soclab.evaluator`, `scenarios/` | Twelve versioned attack scenarios, baseline and protected campaigns | implemented |
-| `soclab.scoring` | Five score families, mandatory gates, Wilson intervals, authority recommendation | implemented |
+| `soclab.evaluator`, `scenarios/` | Thirty versioned attack scenarios with ATLAS and OWASP references, fixture injections, harness attacks on the control plane, baseline and protected campaigns | implemented |
+| `soclab.scoring` | Five score families, difficulty-weighted resistance, mandatory gates, Wilson intervals, tier rules, authority recommendation | implemented |
 | `soclab.telemetry` | OpenInference-style spans, redaction, in-memory, JSONL, optional MLflow and Phoenix | implemented, optional integration |
 | `soclab.reports` | Executive and technical HTML and JSON from one evidence record; one-page executive PDF through the optional `pdf` extra | implemented |
 | `soclab.cli`, `soclab.api` | Command line and versioned HTTP API | implemented |

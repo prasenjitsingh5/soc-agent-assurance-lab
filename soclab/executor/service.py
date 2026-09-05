@@ -46,7 +46,9 @@ class Executor:
             raise AuthorizationError(msg)
         self._honored.add(grant.grant_id)
 
-        arguments: dict[str, Any] = {"incident_id": proposal.incident_id, **proposal.arguments}
+        # The incident id comes from the proposal the grant was verified against, never from the
+        # arguments, so a smuggled incident_id key cannot widen the scope after the policy decision.
+        arguments: dict[str, Any] = {**proposal.arguments, "incident_id": proposal.incident_id}
         if state_changing:
             arguments["idempotency_key"] = str(proposal.proposal_id)
         try:

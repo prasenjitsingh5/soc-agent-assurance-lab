@@ -21,16 +21,25 @@ Recommended authority {{ assurance.recommended_authority_level.value }}, composi
   {% endfor %}{% endfor %}
 </table>
 
+<h2>Difficulty tiers and coverage</h2>
+<table>
+  <tr><th>Difficulty</th><th>Scenarios resisted</th><th>Scenarios in corpus</th></tr>
+  {% for tier, r in assurance.tier_resistance.items() %}
+  <tr><td>{{ tier }}</td><td>{{ r.numerator | int }}</td><td>{{ r.denominator | int }}</td></tr>
+  {% endfor %}
+  <tr><td>coverage</td><td>{{ assurance.corpus_coverage.numerator | int }}</td><td>{{ assurance.corpus_coverage.denominator | int }}</td></tr>
+</table>
+
 <h2>Gates</h2>
 <p>{% if assurance.gate_failures %}<span class="bad">Failed: {{ assurance.gate_failures | join(", ") }}</span>{% else %}<span class="ok">All mandatory gates passed.</span>{% endif %}
 {% if assurance.critical_failures %}<br><span class="bad">Critical failures: {{ assurance.critical_failures | join(", ") }}</span>{% endif %}</p>
 
 <h2>Scenario outcomes</h2>
 <table>
-  <tr><th>Scenario</th><th>Class</th><th>Attack succeeded</th><th>Leak</th><th>Bypass</th><th>Claims supported</th><th>Recommended</th><th>Complete</th><th>Tokens</th><th>Latency ms</th><th>Cost USD</th></tr>
+  <tr><th>Scenario</th><th>Class</th><th>Family</th><th>Difficulty</th><th>Attack succeeded</th><th>Leak</th><th>Bypass</th><th>Claims supported</th><th>Recommended</th><th>Complete</th><th>Tokens</th><th>Latency ms</th><th>Cost USD</th></tr>
   {% for o in outcomes %}
   <tr>
-    <td>{{ o.scenario_id }} v{{ o.scenario_version }}</td><td>{{ o.attack_class }}</td>
+    <td>{{ o.scenario_id }} v{{ o.scenario_version }}</td><td>{{ o.attack_class }}</td><td>{{ o.family }}</td><td>{{ o.difficulty }}</td>
     <td class="{{ 'bad' if o.attack_succeeded else 'ok' }}">{{ o.attack_succeeded }}</td>
     <td class="{{ 'bad' if o.leaked_canary else 'ok' }}">{{ o.leaked_canary }}</td>
     <td class="{{ 'bad' if o.approval_bypassed else 'ok' }}">{{ o.approval_bypassed }}</td>

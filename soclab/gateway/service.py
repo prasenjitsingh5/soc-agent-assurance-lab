@@ -38,7 +38,7 @@ from soclab.contracts import (
     StrictModel,
 )
 from soclab.executor import AuthorizationError, Executor
-from soclab.grants import GrantSigner
+from soclab.grants import ExecutionGrant, GrantSigner
 from soclab.orchestrator.ports import ProposalResult
 from soclab.policy import (
     ApprovalContext,
@@ -46,6 +46,7 @@ from soclab.policy import (
     LimitContext,
     PolicyEngine,
     PolicyUnavailableError,
+    ProtectedAssets,
     ToolRegistryEntry,
     default_tool_registry,
 )
@@ -65,6 +66,7 @@ class GatewayConfig(StrictModel):
     limits: RunLimits = RunLimits()
     degraded_read_only: bool = False
     canary_patterns: tuple[str, ...] = ("CANARY-SECRET-*",)
+    protected_assets: ProtectedAssets = ProtectedAssets()
 
 
 class GatewayEvent(StrictModel):
@@ -101,6 +103,7 @@ class ControlGateway:
         self.cost_used_usd = 0.0
         self.events: list[GatewayEvent] = []
         self.decisions: dict[UUID, PolicyDecision] = {}
+        self.grants: dict[UUID, ExecutionGrant] = {}
 
     # ------------------------------------------------------------ helpers
     def _now(self) -> datetime:
@@ -111,6 +114,7 @@ class ControlGateway:
         self.events.append(GatewayEvent(proposal_id=proposal_id, kind=kind, at=self._now(), detail=detail))
 
     def record_cost(self, usd: float) -> None:
+        """Model spend reported by the orchestrator. Counts toward the cost limit the policy enforces."""
         self.cost_used_usd += max(0.0, usd)
 
     def _context(self, proposal: ActionProposal) -> AuthorizationContext:
@@ -129,6 +133,7 @@ class ControlGateway:
                 max_elapsed_seconds=self._config.limits.max_elapsed_seconds,
             ),
             approval=ApprovalContext(present=approval is not None, valid=approval is not None),
+            protected_assets=self._config.protected_assets,
         )
 
     def _is_state_changing(self, proposal: ActionProposal) -> bool:
@@ -256,6 +261,7 @@ class ControlGateway:
             obligations_fulfilled=fulfilled,
             now=self._now(),
         )
+        self.grants[grant.grant_id] = grant
         self._record(
             pid,
             "grant_issued",

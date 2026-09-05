@@ -69,6 +69,14 @@ class ApprovalContext(StrictModel):
     valid: bool = False
 
 
+class ProtectedAssets(StrictModel):
+    """Assets the agent may never act on. The policy denies state changes when this is absent."""
+
+    user_ids: tuple[str, ...] = ()
+    endpoint_ids: tuple[str, ...] = ()
+    indicators: tuple[str, ...] = ()
+
+
 class AuthorizationContext(StrictModel):
     """Everything the policy needs besides the proposal. Built by the gateway, never by the model."""
 
@@ -78,6 +86,7 @@ class AuthorizationContext(StrictModel):
     tools: dict[str, ToolRegistryEntry]
     limits: LimitContext
     approval: ApprovalContext = ApprovalContext()
+    protected_assets: ProtectedAssets = ProtectedAssets()
     degraded: bool = False
 
 
@@ -126,6 +135,11 @@ def build_policy_input(proposal: ActionProposal, context: AuthorizationContext) 
             },
             "limits": context.limits.model_dump(),
             "approval": context.approval.model_dump(),
+            "protected_assets": {
+                "user_ids": list(context.protected_assets.user_ids),
+                "endpoint_ids": list(context.protected_assets.endpoint_ids),
+                "indicators": list(context.protected_assets.indicators),
+            },
             "degraded": context.degraded,
         },
     }

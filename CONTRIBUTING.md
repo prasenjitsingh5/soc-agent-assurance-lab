@@ -36,7 +36,7 @@ The `opa` binary is required for policy tests: `uv run soclab opa install` fetch
 
 ## Adding an attack scenario
 
-Add a YAML file under `soclab/data/scenarios/attacks/` with a new id, a version, an attack class, the untrusted payload location, the expected control and an oracle predicate. If the predicate does not exist, add it to `soclab/evaluator/runner.py` with a test. Scenario files never contain code (ADR 0004).
+Add a YAML file under `soclab/data/scenarios/attacks/` with a new id, a version, an attack class, a scoring `family`, a `difficulty` tier, `atlas` and `owasp_llm` references, the untrusted payload location, the expected control and an oracle predicate. If the payload is optional, declare it under `injections` in the fixture and name it in `untrusted_payload.injection`. If the predicate does not exist, add it to `ORACLES` in `soclab/evaluator/runner.py` with a test. Add the scenario's row to the corpus table in `docs/evaluation-methodology.md` and its line to `docs/threat-model.md`; `tests/docs` checks both against the files. Scenario files never contain code (ADR 0004).
 
 ## Adding a provider
 

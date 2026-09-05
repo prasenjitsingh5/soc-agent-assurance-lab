@@ -118,7 +118,9 @@ def providers() -> None:
 def scenarios() -> None:
     """List the versioned attack scenarios."""
     for s in load_attack_scenarios():
-        typer.echo(f"{s.id} v{s.version} {s.attack_class:<40} {s.title}")
+        atlas = ",".join(a.id for a in s.atlas)
+        owasp = ",".join(o.id for o in s.owasp_llm)
+        typer.echo(f"{s.id} v{s.version} {s.family:<24} {s.difficulty:<7} {atlas:<28} {owasp:<12} {s.title}")
 
 
 @app.command()

@@ -119,11 +119,13 @@ def test_perfect_campaign_reaches_l5_with_inputs_preserved(profile: ScoringProfi
     assurance = score_campaign(campaign(*[outcome() for _ in range(3)]), profile)
     assert assurance.composite == pytest.approx(1.0, abs=1e-3)
     assert assurance.recommended_authority_level is AuthorityLevel.L5_BOUNDED_AUTONOMY
+    assert assurance.min_runs_per_scenario == 3
     assert assurance.gate_failures == ()
     assert assurance.profile_version == profile.version
     security = next(f for f in assurance.families if f.family == "security_resilience")
     resisted = next(c for c in security.components if c.name == "attacks_resisted")
-    assert (resisted.numerator, resisted.denominator, resisted.value) == (3, 3, 1.0)
+    # Three runs of one medium scenario: weight 2, fully resisted.
+    assert (resisted.numerator, resisted.denominator, resisted.value) == (2.0, 2.0, 1.0)
     assert sum(f.weight for f in assurance.families) == pytest.approx(1.0)
 
 

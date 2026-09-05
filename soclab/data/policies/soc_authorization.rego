@@ -9,19 +9,24 @@
 #                     limits { calls_made, max_calls, cost_used_usd, max_cost_usd,
 #                              elapsed_seconds, max_elapsed_seconds },
 #                     approval { present, valid },
+#                     protected_assets { user_ids [], endpoint_ids [], indicators [] },
 #                     degraded }
 #
 # Output: data.soc.authorization.result
 #   { decision, reason_codes, obligations, risk_tier, policy_version }
 #
 # The policy is default deny. A state-changing tool can only reach "allow" or
-# "allow_with_obligations" through an explicit rule below.
+# "allow_with_obligations" through an explicit rule below. Every rule that
+# depends on context data denies when that data is missing.
 
 package soc.authorization
 
 import rego.v1
 
-policy_version := "2026.09.04-1"
+policy_version := "2026.09.05-1"
+
+# Longest string any tool argument may carry. Longer values are denied outright.
+max_argument_length := 512
 
 default decision := "deny"
 
@@ -80,6 +85,41 @@ authority_rank := {"L1": 1, "L2": 2, "L3": 3, "L4": 4, "L5": 5}
 
 rank := authority_rank[input.context.authority_level]
 
+# The protected-asset list must be present as three arrays. Absence is not "nothing protected".
+protected_assets_declared if {
+	is_array(input.context.protected_assets.user_ids)
+	is_array(input.context.protected_assets.endpoint_ids)
+	is_array(input.context.protected_assets.indicators)
+}
+
+protected_target if {
+	input.proposal.tool_name in {"disable_account", "revoke_sessions"}
+	input.proposal.arguments.user_id in input.context.protected_assets.user_ids
+}
+
+protected_target if {
+	input.proposal.tool_name == "isolate_endpoint"
+	input.proposal.arguments.endpoint_id in input.context.protected_assets.endpoint_ids
+}
+
+protected_target if {
+	input.proposal.tool_name == "block_indicator"
+	input.proposal.arguments.indicator in input.context.protected_assets.indicators
+}
+
+# A block rule with a prefix shorter than /8 is a catch-all, whatever the address.
+protected_target if {
+	input.proposal.tool_name == "block_indicator"
+	is_string(input.proposal.arguments.indicator)
+	regex.match(`/[0-7]$`, input.proposal.arguments.indicator)
+}
+
+scalar(v) if is_string(v)
+
+scalar(v) if is_number(v)
+
+scalar(v) if is_boolean(v)
+
 # --------------------------------------------------------------------------- #
 # Deny reasons. Any one of these keeps the default decision.
 # --------------------------------------------------------------------------- #
@@ -94,6 +134,24 @@ deny_reasons contains "insufficient_evidence" if not has_evidence
 deny_reasons contains "argument_schema_violation" if {
 	known_tool
 	not arguments_valid
+}
+
+deny_reasons contains "argument_not_scalar" if {
+	some _, v in input.proposal.arguments
+	not scalar(v)
+}
+
+deny_reasons contains "argument_too_long" if {
+	some _, v in input.proposal.arguments
+	is_string(v)
+	count(v) > max_argument_length
+}
+
+# Identifiers and indicators are ASCII in this environment. Anything else is a lookalike risk.
+deny_reasons contains "non_ascii_argument" if {
+	some _, v in input.proposal.arguments
+	is_string(v)
+	not regex.match(`^[ -~]*$`, v)
 }
 
 deny_reasons contains "limit_exceeded" if not within_limits
@@ -111,6 +169,16 @@ deny_reasons contains "authority_below_action_threshold" if {
 deny_reasons contains "insufficient_evidence_for_action" if {
 	state_changing
 	not sufficient_evidence_for_action
+}
+
+deny_reasons contains "protected_assets_undeclared" if {
+	state_changing
+	not protected_assets_declared
+}
+
+deny_reasons contains "protected_asset" if {
+	protected_assets_declared
+	protected_target
 }
 
 clean if count(deny_reasons) == 0

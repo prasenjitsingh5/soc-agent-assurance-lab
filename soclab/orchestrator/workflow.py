@@ -30,7 +30,7 @@ from soclab.contracts import (
     StrictModel,
     TrustLabel,
 )
-from soclab.orchestrator.ports import ProposalResult, ToolProposalPort
+from soclab.orchestrator.ports import CostSink, ProposalResult, ToolProposalPort
 from soclab.providers.base import (
     MalformedResponseError,
     Message,
@@ -265,6 +265,8 @@ class _Run:
             msg = f"maximum steps ({self.max_steps}) exhausted before {stage}"
             raise _ExhaustedError(msg)
         response = await self.provider.generate_structured(self._request(stage, schema))
+        if isinstance(self.port, CostSink):
+            self.port.record_cost(float(response.estimated_cost_usd or 0.0))
         self.events.append(
             CanonicalModelEvent(
                 trace_id=self.trace_id,
