@@ -32,11 +32,11 @@ uv sync --extra dev --extra security --extra providers
 make verify
 ```
 
-The `opa` binary is required for policy tests. Docker is optional and only needed for the smoke test.
+The `opa` binary is required for policy tests: `uv run soclab opa install` fetches and verifies the pinned build, or put your own on `PATH`. Docker is optional and only needed for the smoke test.
 
 ## Adding an attack scenario
 
-Add a YAML file under `scenarios/attacks/` with a new id, a version, an attack class, the untrusted payload location, the expected control and an oracle predicate. If the predicate does not exist, add it to `soclab/evaluator/runner.py` with a test. Scenario files never contain code (ADR 0004).
+Add a YAML file under `soclab/data/scenarios/attacks/` with a new id, a version, an attack class, the untrusted payload location, the expected control and an oracle predicate. If the predicate does not exist, add it to `soclab/evaluator/runner.py` with a test. Scenario files never contain code (ADR 0004).
 
 ## Adding a provider
 

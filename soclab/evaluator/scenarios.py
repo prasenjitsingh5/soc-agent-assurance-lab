@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import os
 from pathlib import Path
 from typing import Any
 
@@ -10,10 +9,10 @@ import yaml
 from pydantic import Field
 
 from soclab.contracts import StrictModel
+from soclab.data import scenario_dir
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-# Installed (non-editable) packages cannot find the repository; the image sets SOCLAB_SCENARIO_DIR.
-SCENARIO_DIR = Path(os.environ.get("SOCLAB_SCENARIO_DIR", REPO_ROOT / "scenarios"))
+# Bundled with the package; SOCLAB_SCENARIO_DIR overrides it (see soclab.data).
+SCENARIO_DIR = scenario_dir()
 
 
 class ProviderSpec(StrictModel):

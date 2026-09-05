@@ -244,9 +244,9 @@ async def test_exec_engine_missing_policy_dir_is_unavailable(tmp_path: Path) -> 
 
 
 def test_exec_engine_requires_binary(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    monkeypatch.setenv("SOCLAB_OPA_BIN", str(tmp_path / "missing"))
-    monkeypatch.setattr("soclab.policy.client.shutil.which", lambda _: None)
-    monkeypatch.setattr("soclab.policy.client.REPO_ROOT", tmp_path)
+    monkeypatch.setenv("SOCLAB_OPA_BINARY", str(tmp_path / "missing"))
+    monkeypatch.setenv("SOCLAB_CACHE_DIR", str(tmp_path / "cache"))
+    monkeypatch.setattr("soclab.policy.opa_binary.shutil.which", lambda _: None)
     with pytest.raises(PolicyUnavailableError, match="opa binary not found"):
         OpaExecPolicyEngine()
 

@@ -33,6 +33,7 @@ REQUIRED_FILES = [
     ".github/workflows/ci.yml",
     ".github/workflows/security.yml",
     ".github/workflows/docs.yml",
+    ".github/workflows/release.yml",
     ".github/dependabot.yml",
     ".github/PULL_REQUEST_TEMPLATE.md",
     ".github/ISSUE_TEMPLATE/bug_report.yml",
@@ -45,9 +46,13 @@ REQUIRED_FILES = [
     "docs/custom-provider.md",
     "docs/demo-script.md",
     "docs/limitations.md",
+    "docs/release-process.md",
     "docs/THIRD-PARTY-NOTICES.md",
     "docs/PROJECT-ACCEPTANCE.md",
     "docs/adr/0001-single-python-package.md",
+    "docs/adr/0006-bundled-runtime-data.md",
+    "soclab/data/policies/soc_authorization.rego",
+    "soclab/data/scenarios/incidents/identity-compromise.yaml",
 ]
 
 FORBIDDEN_CLAIMS = [
@@ -107,6 +112,8 @@ def test_documented_make_targets_exist() -> None:
         "up",
         "down",
         "demo",
+        "opa-install",
+        "build",
         "verify",
     ):
         assert required in targets, required
@@ -121,7 +128,10 @@ def test_documented_cli_commands_exist() -> None:
     from soclab.cli import app
 
     commands = set(get_command(app).commands)  # type: ignore[attr-defined]
-    docs = "\n".join((REPO / p).read_text(encoding="utf-8") for p in ("README.md", "docs/demo-script.md"))
+    docs = "\n".join(
+        (REPO / p).read_text(encoding="utf-8")
+        for p in ("README.md", "docs/demo-script.md", "docs/policy-guide.md", "docs/release-process.md")
+    )
     for used in set(re.findall(r"soclab ([a-z][a-z-]+)", docs)):
         assert used in commands, f"docs reference unknown command soclab {used}"
 

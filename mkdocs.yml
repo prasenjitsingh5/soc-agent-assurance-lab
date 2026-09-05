@@ -93,7 +93,9 @@ nav:
       - "ADR 0003: Signed execution grants": adr/0003-signed-execution-grants.md
       - "ADR 0004: Oracles are named predicates": adr/0004-oracles-are-named-predicates.md
       - "ADR 0005: Docker profile boundaries": adr/0005-docker-profile-boundaries.md
+      - "ADR 0006: Bundled runtime data": adr/0006-bundled-runtime-data.md
   - Releases:
+      - Release process: release-process.md
       - "0.1.0 evidence": releases/0.1.0-evidence.md
   - Project:
       - Acceptance checklist: PROJECT-ACCEPTANCE.md

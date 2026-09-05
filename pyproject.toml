@@ -1,15 +1,27 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "soc-agent-assurance-lab"
+name = "soclab"
 version = "0.1.0"
 description = "Measures whether an AI SOC agent has earned operational authority: contextual authorization, adversarial testing, hash-chained evidence and a deployment recommendation."
 readme = "README.md"
 requires-python = ">=3.12"
-license = { text = "Apache-2.0" }
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
 authors = [{ name = "Prasenjit Singh" }]
+keywords = ["security", "soc", "policy", "opa", "evaluation", "llm-agents"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Information Technology",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Security",
+    "Typing :: Typed",
+]
 dependencies = [
     "fastapi==0.141.1",
     "pydantic==2.13.5",
@@ -52,6 +64,12 @@ docs = [
     "pillow==12.3.0",
 ]
 
+[project.urls]
+Homepage = "https://github.com/prasenjitsingh5/soc-agent-assurance-lab"
+Repository = "https://github.com/prasenjitsingh5/soc-agent-assurance-lab"
+Changelog = "https://github.com/prasenjitsingh5/soc-agent-assurance-lab/blob/main/CHANGELOG.md"
+Issues = "https://github.com/prasenjitsingh5/soc-agent-assurance-lab/issues"
+
 [project.scripts]
 soclab = "soclab.cli:app"
 
@@ -59,7 +77,10 @@ soclab = "soclab.cli:app"
 include = ["soclab*"]
 
 [tool.setuptools.package-data]
-soclab = ["simulator/fixtures/*.json", "reports/templates/*.j2"]
+# Everything the CLI needs at runtime ships inside the wheel. tests/unit/test_package_data.py
+# checks that every file under soclab/data matches one of these patterns.
+soclab = ["py.typed", "simulator/fixtures/*.json", "reports/templates/*.j2"]
+"soclab.data" = ["scenarios/attacks/*.yaml", "scenarios/incidents/*.yaml", "policies/*.rego"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

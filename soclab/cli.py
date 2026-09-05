@@ -22,11 +22,15 @@ from soclab.evaluator import CampaignConfig, load_attack_scenarios, run_campaign
 from soclab.evidence import EvidenceRepository
 from soclab.orchestrator import BaselinePort, ToolProposalPort, run_investigation
 from soclab.policy import (
+    OPA_VERSION,
     ManagedOpaServer,
     OpaHttpPolicyEngine,
+    OpaInstallError,
     PolicyEngine,
-    PolicyUnavailableError,
+    cached_opa_path,
     find_opa_binary,
+    install_opa,
+    opa_asset,
 )
 from soclab.providers.registry import ProviderRegistry
 from soclab.reports import ReportAudience, ReportGenerator
@@ -34,6 +38,8 @@ from soclab.scoring import AssuranceResult, CampaignResult, score_campaign
 from soclab.simulator import SimulatorState
 
 app = typer.Typer(help="SOC Agent Assurance Lab", no_args_is_help=True)
+opa_app = typer.Typer(help="Manage the Open Policy Agent binary the lab runs locally.", no_args_is_help=True)
+app.add_typer(opa_app, name="opa")
 
 DEFAULT_DB = "sqlite+pysqlite:///./runs/soclab.sqlite"
 
@@ -45,16 +51,35 @@ def _repository(database_url: str | None) -> EvidenceRepository:
     return EvidenceRepository(url)
 
 
+def _require_opa() -> Path:
+    """Resolve the OPA binary or explain exactly how to get one and exit non-zero."""
+    found = find_opa_binary()
+    if found is not None:
+        return found
+    typer.echo(f"OPA binary not found. Protected mode needs Open Policy Agent {OPA_VERSION}.", err=True)
+    typer.echo("Run one of:", err=True)
+    typer.echo("  soclab opa install        download the pinned build, verify its sha256", err=True)
+    typer.echo("  soclab demo --install-opa the same, then run the demo", err=True)
+    typer.echo("Or set SOCLAB_OPA_BINARY to an opa binary, or put opa on PATH.", err=True)
+    raise typer.Exit(code=1)
+
+
 def _policy_engine() -> tuple[PolicyEngine, ManagedOpaServer | None]:
     """Prefer a configured OPA server; otherwise start a managed one from the local binary."""
     url = os.environ.get("SOCLAB_OPA_URL")
     if url:
         return OpaHttpPolicyEngine(url), None
-    if find_opa_binary() is None:
-        msg = "no OPA available: set SOCLAB_OPA_URL or install the opa binary (see README)"
-        raise PolicyUnavailableError(msg)
-    server = ManagedOpaServer()
+    server = ManagedOpaServer(binary=_require_opa())
     return server.start(), server
+
+
+def _install_opa() -> Path:
+    """Run the installer, printing what it downloads and verifies. Exits non-zero on any failure."""
+    try:
+        return install_opa(echo=typer.echo)
+    except OpaInstallError as exc:
+        typer.echo(f"OPA install failed: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
 
 
 @app.command()
@@ -231,9 +256,40 @@ def compare(
 
 
 @app.command()
-def demo() -> None:
+def demo(
+    install_opa_first: Annotated[
+        bool,
+        typer.Option(
+            "--install-opa",
+            help=f"Download and verify OPA {OPA_VERSION} into the user cache before running.",
+        ),
+    ] = False,
+) -> None:
     """Five-minute path: compare baseline and protected with the mock provider."""
+    if install_opa_first:
+        _install_opa()
+    if not os.environ.get("SOCLAB_OPA_URL"):
+        _require_opa()
     compare(out=Path("runs/demo"), provider="mock", model=None, database_url=None)
+
+
+@opa_app.command("install")
+def opa_install() -> None:
+    """Download the pinned OPA build for this machine, verify its sha256 and cache it."""
+    try:
+        asset = opa_asset()
+    except OpaInstallError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=1) from exc
+    typer.echo(f"OPA {OPA_VERSION} for {asset.system}/{asset.arch}")
+    typer.echo(f"Cache: {cached_opa_path(asset)}")
+    _install_opa()
+
+
+@opa_app.command("path")
+def opa_path() -> None:
+    """Print the OPA binary the lab would use, or exit 1 with install instructions."""
+    typer.echo(str(_require_opa()))
 
 
 @app.command(name="verify-chain")

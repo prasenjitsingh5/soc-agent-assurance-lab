@@ -4,13 +4,32 @@ Everything below runs locally with the mock provider. No keys, no network.
 
 ## 1. Install (one minute)
 
+The package is on PyPI as `soclab`. With [uv](https://docs.astral.sh/uv/) installed, one command fetches the lab, downloads the pinned Open Policy Agent build after printing its URL and sha256, verifies it, and runs the comparison:
+
+```bash
+uvx soclab demo --install-opa
+```
+
+Without uv:
+
+```bash
+pip install soclab
+soclab opa install
+soclab demo
+```
+
+`soclab opa install` puts OPA 1.20.2 in a per-user cache and checks it against a digest pinned in the source. Nothing is downloaded unless you run that command or pass `--install-opa`. If `opa` is already on `PATH`, or `SOCLAB_OPA_BINARY` points at one, the lab uses that and `uvx soclab demo` works on its own. Without any OPA, `soclab demo` stops and prints the two commands above.
+
+From a checkout, for development:
+
 ```bash
 git clone https://github.com/prasenjitsingh5/soc-agent-assurance-lab.git
 cd soc-agent-assurance-lab
 uv sync --extra dev --extra security
+uv run soclab opa install
 ```
 
-You also need the `opa` binary on PATH or in `tools/`. Download it from https://www.openpolicyagent.org/docs/latest/#running-opa.
+The rest of this script uses the checkout form, `uv run soclab`. After `pip install soclab` drop the `uv run`.
 
 ## 2. See the attack surface (30 seconds)
 

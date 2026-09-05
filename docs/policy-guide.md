@@ -1,6 +1,18 @@
 # Policy guide
 
-Authorization lives in one Rego package, `soc.authorization`, in `policies/rego/`. The gateway sends it a small, explicit input document and receives a decision. There is no Python fallback: if OPA cannot answer, state-changing actions fail closed.
+Authorization lives in one Rego package, `soc.authorization`, in `soclab/data/policies/`. The files ship inside the Python package, so an installed wheel evaluates the same Rego that the repository tests. The gateway sends it a small, explicit input document and receives a decision. There is no Python fallback: if OPA cannot answer, state-changing actions fail closed.
+
+## Running OPA
+
+Outside Docker the lab starts its own OPA server from a local binary. It looks for the binary in this order:
+
+1. `SOCLAB_OPA_BINARY`, when it names an existing file.
+2. `opa` on `PATH`.
+3. The per-user cache written by `soclab opa install`.
+
+`soclab opa install` downloads the pinned build (OPA 1.20.2) for the current operating system and CPU from the official GitHub release, prints the URL and the expected sha256, verifies the file against a digest hard coded in `soclab/policy/opa_binary.py`, and refuses to keep it on any mismatch. Windows, Linux and macOS on amd64 and arm64 are covered. The cache is `%LOCALAPPDATA%\soclab\Cache` on Windows, `~/Library/Caches/soclab` on macOS and `~/.cache/soclab` elsewhere; `SOCLAB_CACHE_DIR` overrides it. Nothing is downloaded unless you run that command or pass `--install-opa` to `soclab demo`. `soclab opa path` prints the binary the lab would use.
+
+Set `SOCLAB_OPA_URL` to use an OPA server that is already running, as the Docker profile does. `SOCLAB_POLICY_DIR` points the managed server and `opa test` at a different policy folder.
 
 ## Input
 
@@ -72,6 +84,6 @@ An obligation the gateway does not recognize blocks execution.
 ## Changing the policy
 
 1. Edit the Rego and bump `policy_version`.
-2. Add or update a test in `soc_authorization_test.rego`. Run `make policy-test`.
+2. Add or update a test in `soc_authorization_test.rego`. Run `make policy-test`, which runs `opa test soclab/data/policies -v`.
 3. Run `uv run pytest tests/contract/test_policy_client.py tests/integration` so the Python side sees the change.
 4. Every campaign records the policy version in its evidence chain, so results from before and after the change are distinguishable.

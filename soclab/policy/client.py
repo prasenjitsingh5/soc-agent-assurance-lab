@@ -15,8 +15,6 @@ result for state-changing tools. There is no in-process fallback policy.
 from __future__ import annotations
 
 import json
-import os
-import shutil
 
 # Running the pinned opa binary is the purpose of this module.
 import subprocess  # noqa: S404  # nosec B404
@@ -36,11 +34,16 @@ from soclab.contracts import (
     RiskTier,
     StrictModel,
 )
+from soclab.data import policy_dir
+from soclab.policy.opa_binary import find_opa_binary
 from soclab.simulator import TOOL_RISK_TIERS
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-POLICY_DIR = Path(os.environ.get("SOCLAB_POLICY_DIR", REPO_ROOT / "policies" / "rego"))
+# Bundled with the package; SOCLAB_POLICY_DIR overrides it (see soclab.data).
+POLICY_DIR = policy_dir()
 QUERY = "data.soc.authorization.result"
+
+
+OPA_NOT_FOUND = "opa binary not found; run `soclab opa install` or set SOCLAB_OPA_BINARY"
 
 
 class PolicyUnavailableError(Exception):
@@ -186,20 +189,6 @@ class OpaHttpPolicyEngine:
         return _to_decision(proposal, body["result"])
 
 
-def find_opa_binary() -> Path | None:
-    """Locate opa: SOCLAB_OPA_BIN, then PATH, then the repo-local tools folder."""
-    env = os.environ.get("SOCLAB_OPA_BIN")
-    if env and Path(env).exists():
-        return Path(env)
-    found = shutil.which("opa")
-    if found:
-        return Path(found)
-    for candidate in (REPO_ROOT / "tools" / "opa.exe", REPO_ROOT / "tools" / "opa"):
-        if candidate.exists():
-            return candidate
-    return None
-
-
 class OpaExecPolicyEngine:
     """Evaluates the policy with the opa binary. No server required."""
 
@@ -208,8 +197,7 @@ class OpaExecPolicyEngine:
     ) -> None:
         resolved = binary or find_opa_binary()
         if resolved is None:
-            msg = "opa binary not found; set SOCLAB_OPA_BIN or place it in tools/"
-            raise PolicyUnavailableError(msg)
+            raise PolicyUnavailableError(OPA_NOT_FOUND)
         self._binary = resolved
         self._policy_dir = policy_dir
         self._timeout = timeout_seconds

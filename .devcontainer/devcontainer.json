@@ -11,7 +11,7 @@
   },
   "containerEnv": {
     "UV_LINK_MODE": "copy",
-    "SOCLAB_OPA_BIN": "/usr/local/bin/opa"
+    "SOCLAB_OPA_BINARY": "/usr/local/bin/opa"
   },
   "customizations": {
     "vscode": {

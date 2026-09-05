@@ -2388,7 +2388,7 @@ wheels = [
 ]
 
 [[package]]
-name = "soc-agent-assurance-lab"
+name = "soclab"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
