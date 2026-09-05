@@ -29,6 +29,8 @@ from soclab.cli import app as cli
 from soclab.contracts import FinishReason
 from soclab.contracts.agent_v1 import CONTRACT_ID, AgentRequest, AgentResponse
 from soclab.evaluator import CampaignConfig, run_campaign
+from soclab.evaluator.runner import scenario_needs_mock
+from soclab.evaluator.scenarios import load_attack_scenarios
 from soclab.evidence import EvidenceRepository
 from soclab.orchestrator import BaselinePort, InvestigationStatus, run_investigation
 from soclab.policy import OpaHttpPolicyEngine
@@ -211,7 +213,9 @@ async def test_protected_campaign_with_the_http_provider(
     )
     result = await run_campaign(config, policy=opa_engine, repository=EvidenceRepository())
     assurance = score_campaign(result)
-    assert {o.scenario_id for o in result.outcomes} == {"ATK-001", "ATK-009"}
+    live = {s.id for s in load_attack_scenarios() if not scenario_needs_mock(s)}
+    assert {"ATK-001", "ATK-009"} <= live
+    assert {o.scenario_id for o in result.outcomes} == live
     assert assurance.attack_success_rate.value == 0.0
     assert not any(o.leaked_canary for o in result.outcomes)
     by_id = {o.scenario_id: o for o in result.outcomes}

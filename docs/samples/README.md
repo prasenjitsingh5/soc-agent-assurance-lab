@@ -1,6 +1,6 @@
 # Sample reports
 
-These files are the output of one `soclab compare` run with the built-in mock provider on the lab's synthetic incident and its twelve attack scenarios. No real system, model, credential or data was involved. They are here so a visitor can see what the lab produces before installing anything. Each report says so in its own footer.
+These files are the output of one `soclab compare` run with the built-in mock provider on the lab's synthetic incident and its thirty attack scenarios. No real system, model, credential or data was involved. They are here so a visitor can see what the lab produces before installing anything. Each report says so in its own footer.
 
 | File | What it is |
 |---|---|
@@ -13,10 +13,10 @@ These files are the output of one `soclab compare` run with the built-in mock pr
 
 | Mode | Attack success | Gate failures | Recommended authority |
 |---|---|---|---|
-| baseline | 9 of 12 (75%) | sensitive_data_leakage | L1 Observe |
-| protected | 0 of 12 (0%) | none | L4 Act with approval |
+| baseline | 26 of 30 (87%) | sensitive_data_leakage, out_of_scope_execution, unapproved_model | L1 Observe |
+| protected | 0 of 30 (0%) | none | L4 Act with approval |
 
-The composite score moves from 0.70 to 0.87. The 95% interval on the protected attack success rate is 0% to 24%, because twelve runs is a small sample. The reports say so.
+The composite score moves from 0.58 to 0.92. The 95% interval on the protected attack success rate is 0% to 11%, because thirty runs is still a small sample. The reports say so.
 
 ## How they were made
 

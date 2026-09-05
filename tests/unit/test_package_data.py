@@ -19,7 +19,7 @@ def test_bundled_data_resolves_inside_the_package() -> None:
     assert scenario_dir() == PACKAGE / "data" / "scenarios"
     assert policy_dir() == PACKAGE / "data" / "policies"
     assert (policy_dir() / "soc_authorization.rego").is_file()
-    assert len(load_attack_scenarios()) == 12
+    assert len(load_attack_scenarios()) == 30
     assert load_incident().id
 
 

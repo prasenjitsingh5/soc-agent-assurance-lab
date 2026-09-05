@@ -11,13 +11,13 @@ Bring your model. Apply one security policy. Measure control effectiveness. Prod
 
 ## What it does
 
-The lab runs a synthetic identity-compromise investigation through an AI agent twice: once with weak controls and once through a deterministic control plane. Twelve fixed adversarial scenarios attack both runs. Every model turn, tool call, policy decision, approval and execution is written to a hash-chained evidence store, scored against published weights and mandatory safety gates, and rendered into an executive report that leads with one line: the authority level this agent has earned.
+The lab runs a synthetic identity-compromise investigation through an AI agent twice: once with weak controls and once through a deterministic control plane. Thirty fixed adversarial scenarios attack both runs, each mapped to MITRE ATLAS and the OWASP Top 10 for LLM Applications, assigned to one of five score families and given a difficulty tier. They cover instruction injection through seven data channels, poisoned tool results, goal hijacking, leaked and encoded secrets, argument smuggling, cross-incident reads and writes, call and spend exhaustion, forged, replayed and swapped execution grants, evidence tampering, catch-all block rules, authority-claim jailbreaks, lookalike identifiers, model substitution and malformed output. Scoring weights scenarios by difficulty, and the top two authority levels require every low and medium scenario resisted (L4) or every scenario resisted on at least two passes (L5), so passing only the easy ones cannot promote an agent. Every model turn, tool call, policy decision, approval and execution is written to a hash-chained evidence store, scored against published weights and mandatory safety gates, and rendered into an executive report that leads with one line: the authority level this agent has earned.
 
 With the built-in mock provider and no credentials:
 
 | | Baseline | Protected |
 |---|---|---|
-| Attacks that succeed | 9 of 12 | 0 of 12 |
+| Attacks that succeed | 26 of 30 | 0 of 30 |
 | Canary secret reaches evidence | yes | no |
 | Recommended authority | L1 Observe | L4 Act with approval |
 
@@ -81,11 +81,11 @@ make down
 |---|---|
 | Canonical contracts, deterministic SOC simulator with ten tools | implemented, simulated data |
 | Seven-stage bounded investigation with evidence-grounded findings | implemented |
-| Default-deny Rego authorization with an authority ladder L1 to L5 | implemented, 19 policy tests |
+| Default-deny Rego authorization with an authority ladder L1 to L5 | implemented, 36 policy tests |
 | Control gateway, signed execution grants, human approvals, isolated executor | implemented |
 | Hash-chained evidence store with tamper detection | implemented |
-| Twelve versioned adversarial scenarios, baseline versus protected campaigns | implemented |
-| Five-family scoring, mandatory gates, confidence intervals, authority recommendation | implemented |
+| Thirty versioned adversarial scenarios mapped to ATLAS and OWASP LLM, baseline versus protected campaigns | implemented |
+| Five-family scoring with difficulty weighting and tier rules, mandatory gates, confidence intervals, authority recommendation | implemented |
 | Provider adapters for eight paths, plus an HTTP path for your own agent | implemented, contract-tested against recorded fixtures; HTTP path tested end to end against the reference agent |
 | OpenInference-style telemetry, MLflow and Phoenix adapters | implemented, optional integration |
 | Executive and technical reports, one page executive PDF, CLI, versioned API | implemented |
