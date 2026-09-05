@@ -5,6 +5,7 @@ All notable changes are recorded here. The format follows [Keep a Changelog](htt
 ## [Unreleased]
 
 ### Added
+- Documentation site built with MkDocs and deployed to GitHub Pages; Codespaces dev container with uv and OPA; reproducible social preview and logo generator
 - Campaigns and comparisons run against any registered provider (`--provider`, `--model`); per-stage JSON instructions and tool argument schemas in prompts; native tool calls accepted as plans; Ollama live-validated with llama3.2:3b
 
 ## [0.1.0] - 2026-09-04

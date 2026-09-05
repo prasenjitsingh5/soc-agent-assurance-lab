@@ -1,0 +1,17 @@
+/* Palette for the Material theme. Matches the social preview and logo. */
+:root {
+  --md-primary-fg-color: #0f1b2d;
+  --md-primary-fg-color--light: #1e3a5f;
+  --md-primary-fg-color--dark: #0a1220;
+  --md-accent-fg-color: #2dd4bf;
+  --md-accent-fg-color--transparent: rgba(45, 212, 191, 0.1);
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #0a1220;
+  --md-accent-fg-color: #2dd4bf;
+}
+
+.md-header__button.md-logo img {
+  border-radius: 4px;
+}

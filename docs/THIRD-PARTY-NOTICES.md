@@ -17,6 +17,7 @@ The lab depends on the following projects through their published packages. None
 | google-genai | Gemini and Vertex adapter, optional | Apache-2.0 |
 | psycopg | PostgreSQL driver in the Docker profile, optional | LGPL-3.0 |
 | pytest, ruff, mypy, bandit, pip-audit, cyclonedx-bom | development and security tooling | MIT, MIT, MIT, Apache-2.0, Apache-2.0, Apache-2.0 |
+| MkDocs, Material for MkDocs, Pillow | documentation site build and social preview generation, `docs` extra only | BSD-2-Clause, MIT, MIT-CMU |
 | PostgreSQL, Redis, OPA container images | Docker profile | PostgreSQL License, RSALv2/SSPLv1 (Redis 7.4), Apache-2.0 |
 
 All product and company names above are trademarks or registered marks of their respective owners, referenced only to identify interoperability; no affiliation or endorsement is implied. MITRE ATT&CK technique identifiers appear in fixtures and findings. ATT&CK is a registered trademark of The MITRE Corporation and is used under its terms of use for reference.
