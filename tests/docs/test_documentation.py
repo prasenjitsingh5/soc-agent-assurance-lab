@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -70,6 +71,16 @@ PUBLIC_DOCS = [
     "SECURITY.md",
     "CONTRIBUTING.md",
     *[str(p.relative_to(REPO)) for p in (REPO / "docs").glob("*.md")],
+    "docs/samples/README.md",
+]
+
+SAMPLE_DIR = REPO / "docs" / "samples"
+SAMPLE_FILES = [
+    "README.md",
+    "mock-protected-executive-report.html",
+    "mock-protected-technical-report.html",
+    "mock-protected-scorecard.json",
+    "mock-protected-executive-summary.pdf",
 ]
 
 
@@ -268,3 +279,38 @@ def test_docs_extra_pins_exact_versions() -> None:
         assert re.fullmatch(r"[A-Za-z0-9_.-]+==\d+(\.\d+)+", entry), (
             f"{entry} is not pinned to an exact version"
         )
+@pytest.mark.parametrize("name", SAMPLE_FILES)
+def test_sample_report_exists(name: str) -> None:
+    assert (SAMPLE_DIR / name).is_file(), name
+
+
+def test_samples_readme_carries_the_mock_and_synthetic_label() -> None:
+    text = (SAMPLE_DIR / "README.md").read_text(encoding="utf-8").lower()
+    assert "mock provider" in text and "synthetic" in text
+    for name in SAMPLE_FILES[1:]:
+        assert name in text, f"samples README does not link {name}"
+
+
+def test_samples_stay_small_and_carry_no_local_paths(pdf_text: Callable[[bytes], str]) -> None:
+    files = [p for p in SAMPLE_DIR.iterdir() if p.is_file()]
+    assert sum(p.stat().st_size for p in files) < 2 * 1024 * 1024
+    for path in files:
+        raw = path.read_bytes()
+        content = pdf_text(raw) if path.suffix == ".pdf" else raw.decode("utf-8")
+        lowered = content.lower()
+        for marker in ("prase", "c:\\", "/users/", "/home/"):
+            assert marker not in lowered, f"{path.name} contains {marker!r}"
+
+
+def test_sample_scorecard_and_pdf_agree() -> None:
+    from soclab.reports import summary_from_payload
+
+    payload = json.loads((SAMPLE_DIR / "mock-protected-scorecard.json").read_text(encoding="utf-8"))
+    summary = summary_from_payload(payload)
+    assert summary.provider == "mock" and summary.mode == "protected"
+    assert summary.control_change is not None, "sample must come from a compare run, both modes"
+    pdf = (SAMPLE_DIR / "mock-protected-executive-summary.pdf").read_bytes()
+    assert pdf.startswith(b"%PDF-")
+    assert len(re.findall(rb"/Type\s*/Page\b(?!s)", pdf)) == 1
+    html = (SAMPLE_DIR / "mock-protected-executive-report.html").read_text(encoding="utf-8")
+    assert summary.campaign_id in html

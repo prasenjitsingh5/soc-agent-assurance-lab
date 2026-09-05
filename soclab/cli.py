@@ -10,6 +10,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+from enum import StrEnum
 from pathlib import Path
 from typing import Annotated
 from uuid import UUID
@@ -33,7 +34,15 @@ from soclab.policy import (
     opa_asset,
 )
 from soclab.providers.registry import ProviderRegistry
-from soclab.reports import ReportAudience, ReportGenerator
+from soclab.reports import (
+    PdfSupportMissingError,
+    ReportAudience,
+    ReportGenerator,
+    render_pdf,
+    render_text,
+    report_timestamp,
+    summary_from_payload,
+)
 from soclab.scoring import AssuranceResult, CampaignResult, score_campaign
 from soclab.simulator import SimulatorState
 
@@ -42,6 +51,11 @@ opa_app = typer.Typer(help="Manage the Open Policy Agent binary the lab runs loc
 app.add_typer(opa_app, name="opa")
 
 DEFAULT_DB = "sqlite+pysqlite:///./runs/soclab.sqlite"
+
+
+class ReportFormat(StrEnum):
+    PDF = "pdf"
+    TEXT = "text"
 
 
 def _repository(database_url: str | None) -> EvidenceRepository:
@@ -308,6 +322,43 @@ def verify_chain(
         bad += 0 if v.valid else 1
     if bad:
         raise typer.Exit(code=1)
+
+
+@app.command()
+def report(
+    scorecard: Annotated[
+        Path,
+        typer.Argument(help="JSON scorecard written by campaign or compare, e.g. runs/demo/executive.json"),
+    ],
+    fmt: Annotated[
+        ReportFormat, typer.Option("--format", help="pdf writes the one-page summary; text prints it")
+    ] = ReportFormat.PDF,
+    out: Annotated[
+        Path | None,
+        typer.Option(help="Output file; defaults to the scorecard path with .pdf, or stdout for text"),
+    ] = None,
+) -> None:
+    """Render the one-page executive summary from a JSON scorecard."""
+    payload = json.loads(scorecard.read_text(encoding="utf-8"))
+    summary = summary_from_payload(payload, generated_at=report_timestamp())
+    if fmt is ReportFormat.TEXT:
+        text = render_text(summary)
+        if out is None:
+            typer.echo(text, nl=False)
+        else:
+            out.parent.mkdir(parents=True, exist_ok=True)
+            out.write_text(text, encoding="utf-8")
+            typer.echo(f"text     : {out}")
+        return
+    try:
+        data = render_pdf(summary)
+    except PdfSupportMissingError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=1) from exc
+    target = out or scorecard.with_suffix(".pdf")
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_bytes(data)
+    typer.echo(f"pdf      : {target}")
 
 
 def _write_reports(

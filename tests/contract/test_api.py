@@ -1,3 +1,5 @@
+import re
+from collections.abc import Callable
 from typing import Any
 
 import pytest
@@ -8,6 +10,7 @@ from soclab.api.state import AppState
 from soclab.contracts import ActionProposal, EvidenceRef, TrustLabel
 from soclab.evidence import EvidenceRepository
 from soclab.policy import OpaHttpPolicyEngine
+from soclab.reports import PDF_EXTRA_HINT
 
 HASH = "d" * 64
 
@@ -145,3 +148,39 @@ def test_protected_campaign_through_api(
     assert response.status_code == 201, response.text
     body: dict[str, Any] = response.json()
     assert body["assurance"]["attack_success_rate"]["value"] == 0.0
+
+
+def test_executive_pdf_report(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch, pdf_text: Callable[[bytes], str]
+) -> None:
+    pytest.importorskip("reportlab")
+    monkeypatch.setenv("SOURCE_DATE_EPOCH", "1788609600")
+    created = client.post("/api/v1/campaigns", json={"mode": "baseline", "scenario_ids": ["ATK-001"]})
+    cid = created.json()["campaign_id"]
+    response = client.get(f"/api/v1/campaigns/{cid}/reports/executive/pdf")
+    assert response.status_code == 200, response.text
+    assert response.headers["content-type"] == "application/pdf"
+    assert response.headers["content-disposition"] == f'inline; filename="executive-{cid}.pdf"'
+    assert response.content.startswith(b"%PDF-")
+    text = re.sub(r"\s+", " ", pdf_text(response.content))
+    assert cid in text and "L1 Observe" in text and "2026-09-05 12:00 UTC" in text
+    assert "CANARY-SECRET-001" not in text
+    again = client.get(f"/api/v1/campaigns/{cid}/reports/executive/pdf")
+    assert again.content == response.content
+    assert (
+        client.get("/api/v1/campaigns/00000000-0000-0000-0000-000000000000/reports/executive/pdf").status_code
+        == 404
+    )
+    with_baseline = client.get(f"/api/v1/campaigns/{cid}/reports/executive/json?baseline={cid}").json()
+    assert (
+        with_baseline["control_change"]["baseline_composite"]
+        == with_baseline["control_change"]["protected_composite"]
+    )
+
+
+def test_executive_pdf_without_extra_returns_501(client: TestClient, hide_reportlab: None) -> None:
+    created = client.post("/api/v1/campaigns", json={"mode": "baseline", "scenario_ids": ["ATK-001"]})
+    cid = created.json()["campaign_id"]
+    response = client.get(f"/api/v1/campaigns/{cid}/reports/executive/pdf")
+    assert response.status_code == 501
+    assert response.json()["detail"] == PDF_EXTRA_HINT

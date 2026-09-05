@@ -30,7 +30,7 @@ model proposes  ->  control gateway normalizes  ->  policy decides  ->  executor
 | `soclab.evaluator`, `scenarios/` | Twelve versioned attack scenarios, baseline and protected campaigns | implemented |
 | `soclab.scoring` | Five score families, mandatory gates, Wilson intervals, authority recommendation | implemented |
 | `soclab.telemetry` | OpenInference-style spans, redaction, in-memory, JSONL, optional MLflow and Phoenix | implemented, optional integration |
-| `soclab.reports` | Executive and technical HTML and JSON from one evidence record | implemented |
+| `soclab.reports` | Executive and technical HTML and JSON from one evidence record; one-page executive PDF through the optional `pdf` extra | implemented |
 | `soclab.cli`, `soclab.api` | Command line and versioned HTTP API | implemented |
 | `infrastructure/docker` | Local profile: API, OPA, PostgreSQL, Redis | implemented |
 | Web application | Role-based views and scenario replay | planned, Phase 2 |
