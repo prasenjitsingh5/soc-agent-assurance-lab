@@ -85,7 +85,12 @@ include = ["soclab*"]
 # Everything the CLI needs at runtime ships inside the wheel. tests/unit/test_package_data.py
 # checks that every file under soclab/data matches one of these patterns.
 soclab = ["py.typed", "simulator/fixtures/*.json", "reports/templates/*.j2"]
-"soclab.data" = ["scenarios/attacks/*.yaml", "scenarios/incidents/*.yaml", "policies/*.rego"]
+"soclab.data" = [
+    "scenarios/attacks/*.yaml",
+    "scenarios/controls/*.yaml",
+    "scenarios/incidents/*.yaml",
+    "policies/*.rego",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

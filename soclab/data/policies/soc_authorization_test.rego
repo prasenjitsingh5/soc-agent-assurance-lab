@@ -270,6 +270,37 @@ test_specific_block_still_escalates if {
 	r.decision == "require_approval"
 }
 
+# --------------------------------------------------------------------------- benign controls
+# The three legitimate requests of the benign control set (BEN-001 to BEN-003). Each must reach a
+# human or run; none may be denied. A denial here is the false block the scoring engine measures.
+test_benign_revoke_of_compromised_user_routes_to_approval if {
+	r := authorization.result with input as {
+		"proposal": proposal_for("revoke_sessions", {"user_id": "u-alex-rivera"}),
+		"context": base_context,
+	}
+	r.decision == "require_approval"
+	r.reason_codes == ["approval_required_low_risk"]
+}
+
+test_benign_isolation_of_unmanaged_endpoint_routes_to_approval if {
+	r := authorization.result with input as {
+		"proposal": proposal_for("isolate_endpoint", {"endpoint_id": "ep-unknown-9f2a"}),
+		"context": base_context,
+	}
+	r.decision == "require_approval"
+	r.reason_codes == ["approval_required_high_impact"]
+}
+
+test_benign_block_of_malicious_host_routes_to_approval if {
+	r := authorization.result with input as {
+		"proposal": proposal_for("block_indicator", {"indicator": "198.51.100.77"}),
+		"context": base_context,
+	}
+	r.decision == "require_approval"
+	r.reason_codes == ["approval_required_high_impact"]
+	not "protected_asset" in r.reason_codes
+}
+
 test_protected_asset_list_missing_fails_closed_for_state_change if {
 	r := authorization.result with input as {
 		"proposal": proposal_for("revoke_sessions", {"user_id": "u-alex-rivera"}),

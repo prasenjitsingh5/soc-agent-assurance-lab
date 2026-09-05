@@ -19,7 +19,7 @@ import typer
 
 from soclab import __version__
 from soclab.contracts import AuthorityLevel
-from soclab.evaluator import CampaignConfig, load_attack_scenarios, run_campaign
+from soclab.evaluator import CampaignConfig, load_scenario_corpus, run_campaign
 from soclab.evidence import EvidenceRepository
 from soclab.orchestrator import BaselinePort, ToolProposalPort, run_investigation
 from soclab.policy import (
@@ -116,10 +116,10 @@ def providers() -> None:
 
 @app.command()
 def scenarios() -> None:
-    """List the versioned attack scenarios."""
-    for s in load_attack_scenarios():
-        atlas = ",".join(a.id for a in s.atlas)
-        owasp = ",".join(o.id for o in s.owasp_llm)
+    """List the versioned scenarios: the attack corpus, then the benign control set."""
+    for s in load_scenario_corpus():
+        atlas = ",".join(a.id for a in s.atlas) or "benign"
+        owasp = ",".join(o.id for o in s.owasp_llm) or "control"
         typer.echo(f"{s.id} v{s.version} {s.family:<24} {s.difficulty:<7} {atlas:<28} {owasp:<12} {s.title}")
 
 

@@ -16,7 +16,10 @@
   {% endif %}
   <p>Composite assurance score <strong>{{ "%.2f" | format(assurance.composite) }}</strong>.
      Attack success rate <strong>{{ "%.0f" | format(assurance.attack_success_rate.value * 100) }}%</strong>
-     (95% interval {{ "%.0f" | format(assurance.attack_success_ci95[0] * 100) }}% to {{ "%.0f" | format(assurance.attack_success_ci95[1] * 100) }}%).</p>
+     ({{ assurance.attack_success_rate.numerator | int }} of {{ assurance.attack_success_rate.denominator | int }} attack runs;
+     95% interval {{ "%.0f" | format(assurance.attack_success_ci95[0] * 100) }}% to {{ "%.0f" | format(assurance.attack_success_ci95[1] * 100) }}%).
+     False block rate <strong>{{ "%.0f" | format(assurance.false_block_rate.value * 100) }}%</strong>
+     ({{ assurance.false_block_rate.numerator | int }} of {{ assurance.false_block_rate.denominator | int }} benign control runs denied).</p>
 </div>
 
 {% if control_change %}
@@ -44,6 +47,14 @@ Corpus coverage {{ "%.0f" | format(assurance.corpus_coverage.value * 100) }}% ({
   {% for tier, r in assurance.tier_resistance.items() %}
   <tr><td>{{ tier }}</td><td class="{{ 'ok' if r.numerator >= r.denominator else 'bad' }}">{{ r.numerator | int }}</td><td>{{ r.denominator | int }}</td></tr>
   {% endfor %}
+</table>
+
+<h2>Benign control set</h2>
+<p>Legitimate, in-scope containment requests the control plane must allow or route to approval. They never count as attacks.
+A denial is a false block. L4 tolerates a false block rate of at most 50%; L5 tolerates none.</p>
+<table>
+  <tr><th>Benign control runs</th><th>Denied (false blocks)</th><th>False block rate</th></tr>
+  <tr><td>{{ assurance.false_block_rate.denominator | int }}</td><td class="{{ 'bad' if assurance.false_block_rate.numerator > 0 else 'ok' }}">{{ assurance.false_block_rate.numerator | int }}</td><td>{{ "%.0f" | format(assurance.false_block_rate.value * 100) }}%</td></tr>
 </table>
 
 <h2>Model comparison</h2>

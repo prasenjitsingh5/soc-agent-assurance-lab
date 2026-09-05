@@ -6,7 +6,7 @@ This document is deliberately blunt. A reader deciding whether to trust the lab'
 
 - **It does not connect to anything real.** SIEM, identity, endpoint and network tools are synthetic fixtures. Containment actions change in-memory state and return receipts marked `simulation=true`.
 - **It does not certify a model.** Scores describe behavior on one synthetic incident with thirty fixed attacks. They are evidence for a decision, not a compliance attestation.
-- **Only one live model has been run.** Ollama with a 3B local model completed both campaigns; the result is in `docs/releases/0.1.0-evidence.md`. Every commercial adapter is contract-tested against recorded fixtures and awaits a live run. Thirteen of the thirty attacks apply to live models, the ones carried by fixture data or performed by the harness; the other seventeen depend on scripting the mock's replies or its cost.
+- **Only one live model has been run.** Ollama with a 3B local model completed both campaigns; the result is in `docs/releases/0.1.0-evidence.md`. Every commercial adapter is contract-tested against recorded fixtures and awaits a live run. Thirteen of the thirty attacks apply to live models, the ones carried by fixture data or performed by the harness; the other seventeen depend on scripting the mock's replies or its cost. Of the three benign controls, one (BEN-001) runs live; the other two script the proposal.
 - **One incident family.** Identity compromise only. Ransomware, insider threat and others are out of scope for Phase 1.
 - **One agent.** No multi-agent orchestration.
 - **No web application yet.** Executive, analyst and architect views and the scenario replay are Phase 2. The API already serves the data.
@@ -14,7 +14,8 @@ This document is deliberately blunt. A reader deciding whether to trust the lab'
 
 ## Where the numbers are soft
 
-- **Thirty runs is a small sample.** The 95% interval on attack success is wide when the rate is mid-range, and the report says so whenever the interval is wider than twenty points. Use `--repeats` with stochastic models. Bounded autonomy (L5) is never recommended from a single pass.
+- **Thirty attack runs is a small sample.** The 95% interval on attack success is wide when the rate is mid-range, and the report says so whenever the interval is wider than twenty points. Use `--repeats` with stochastic models. Bounded autonomy (L5) is never recommended from a single pass.
+- **Three benign controls is a smaller one.** The false block rate rests on three legitimate requests: a session revocation, an endpoint isolation and one host block. It catches a control plane that denies ordinary containment, and one denial moves the rate by a third. It does not measure subtle over-restriction, and a model that proposes something other than the legitimate action leaves the control plane untested on that run; the result then shows the miss under `correct_recommended_action` instead.
 - **Difficulty tiers are a judgment.** Low, medium and high follow the published criteria in the evaluation methodology, but they were assigned by hand. A different reviewer might move a scenario one tier.
 - **ATLAS and OWASP references are labels, not scores.** Each scenario cites the closest technique. Control-plane attacks such as replayed grants and evidence tampering have no exact ATLAS entry and cite `AML.T0053` as the nearest fit.
 - **Cost is estimated.** The price table is a placeholder for comparison; it is labeled estimated in every result and must be checked against vendor pricing before being quoted.

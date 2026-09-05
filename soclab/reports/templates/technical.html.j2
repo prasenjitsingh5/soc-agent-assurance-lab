@@ -30,17 +30,25 @@ Recommended authority {{ assurance.recommended_authority_level.value }}, composi
   <tr><td>coverage</td><td>{{ assurance.corpus_coverage.numerator | int }}</td><td>{{ assurance.corpus_coverage.denominator | int }}</td></tr>
 </table>
 
+<h2>Benign control set</h2>
+<p>Benign controls (attack class <code>none</code>) are legitimate requests the control plane must allow or route to approval. They are excluded from attack success, resistance, tiers and coverage.</p>
+<table>
+  <tr><th>Benign control runs</th><th>Denied (false blocks)</th><th>False block rate</th></tr>
+  <tr><td>{{ assurance.false_block_rate.denominator | int }}</td><td>{{ assurance.false_block_rate.numerator | int }}</td><td>{{ "%.3f" | format(assurance.false_block_rate.value) }}</td></tr>
+</table>
+
 <h2>Gates</h2>
 <p>{% if assurance.gate_failures %}<span class="bad">Failed: {{ assurance.gate_failures | join(", ") }}</span>{% else %}<span class="ok">All mandatory gates passed.</span>{% endif %}
 {% if assurance.critical_failures %}<br><span class="bad">Critical failures: {{ assurance.critical_failures | join(", ") }}</span>{% endif %}</p>
 
 <h2>Scenario outcomes</h2>
 <table>
-  <tr><th>Scenario</th><th>Class</th><th>Family</th><th>Difficulty</th><th>Attack succeeded</th><th>Leak</th><th>Bypass</th><th>Claims supported</th><th>Recommended</th><th>Complete</th><th>Tokens</th><th>Latency ms</th><th>Cost USD</th></tr>
+  <tr><th>Scenario</th><th>Class</th><th>Family</th><th>Difficulty</th><th>Attack succeeded</th><th>False block</th><th>Leak</th><th>Bypass</th><th>Claims supported</th><th>Recommended</th><th>Complete</th><th>Tokens</th><th>Latency ms</th><th>Cost USD</th></tr>
   {% for o in outcomes %}
   <tr>
     <td>{{ o.scenario_id }} v{{ o.scenario_version }}</td><td>{{ o.attack_class }}</td><td>{{ o.family }}</td><td>{{ o.difficulty }}</td>
     <td class="{{ 'bad' if o.attack_succeeded else 'ok' }}">{{ o.attack_succeeded }}</td>
+    <td class="{{ 'bad' if o.false_block else 'ok' }}">{{ o.false_block }}</td>
     <td class="{{ 'bad' if o.leaked_canary else 'ok' }}">{{ o.leaked_canary }}</td>
     <td class="{{ 'bad' if o.approval_bypassed else 'ok' }}">{{ o.approval_bypassed }}</td>
     <td>{{ o.claims_supported }}/{{ o.claims_total }}</td><td>{{ o.recommended_tool or "none" }}</td><td>{{ o.completed }}</td>

@@ -174,6 +174,8 @@ def test_live_providers_get_the_fixture_and_harness_driven_subset() -> None:
         "ATK-024",
         "ATK-026",
         "ATK-028",
+        # The unscripted benign control runs live too; BEN-002 and BEN-003 script the proposal.
+        "BEN-001",
     }
     by_id = {s.id: s for s in load_attack_scenarios()}
     assert scenario_needs_mock(by_id["ATK-022"]) is True  # cost is a mock knob
@@ -329,4 +331,6 @@ async def test_run_started_records_the_injection_and_difficulty() -> None:
     started = repo.events_for(result.outcomes[0].run_id)[0]
     assert started.payload["injections"] == ["edr_command_line"]
     assert started.payload["scenario_difficulty"] == "medium"
-    assert result.corpus and len(result.corpus) == 30
+    # Thirty attacks plus three benign controls, whatever --scenario selected.
+    assert result.corpus and len(result.corpus) == 33
+    assert sum(c.benign for c in result.corpus) == 3

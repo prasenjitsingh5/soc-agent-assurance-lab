@@ -28,7 +28,7 @@ def no_opa(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
 def test_version_and_listings() -> None:
     assert runner.invoke(app, ["version"]).output.strip() == __version__
     scenarios = runner.invoke(app, ["scenarios"])
-    assert scenarios.exit_code == 0 and "ATK-001" in scenarios.output
+    assert scenarios.exit_code == 0 and "ATK-001" in scenarios.output and "BEN-001" in scenarios.output
     providers = runner.invoke(app, ["providers"])
     assert (
         providers.exit_code == 0

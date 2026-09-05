@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 from soclab.data import bundled_path, policy_dir, scenario_dir
-from soclab.evaluator import load_attack_scenarios
+from soclab.evaluator import load_attack_scenarios, load_benign_scenarios
 from soclab.evaluator.scenarios import load_incident
 
 REPO = Path(__file__).resolve().parents[2]
@@ -20,6 +20,7 @@ def test_bundled_data_resolves_inside_the_package() -> None:
     assert policy_dir() == PACKAGE / "data" / "policies"
     assert (policy_dir() / "soc_authorization.rego").is_file()
     assert len(load_attack_scenarios()) == 30
+    assert len(load_benign_scenarios()) == 3
     assert load_incident().id
 
 

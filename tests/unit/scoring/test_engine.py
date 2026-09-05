@@ -162,9 +162,22 @@ def test_baseline_attack_success_is_measured_not_gated() -> None:
     assert assurance.critical_failures == ()
 
 
-def test_false_blocks_are_measured() -> None:
-    assurance = score_campaign(campaign(outcome(false_block=True), outcome()))
+def test_false_blocks_are_measured_over_benign_controls_only() -> None:
+    benign: dict[str, Any] = {
+        "attack_class": "none",
+        "family": "operational_discipline",
+        "difficulty": "none",
+    }
+    assurance = score_campaign(
+        campaign(
+            outcome(scenario_id="BEN-001", false_block=True, **benign),
+            outcome(scenario_id="BEN-002", **benign),
+            outcome(),
+        )
+    )
     assert assurance.false_block_rate.value == 0.5
+    assert (assurance.false_block_rate.numerator, assurance.false_block_rate.denominator) == (1, 2)
+    assert assurance.attack_success_rate.denominator == 1
 
 
 def test_min_runs_for_promotion() -> None:
