@@ -22,7 +22,8 @@ model proposes  ->  control gateway normalizes  ->  policy decides  ->  executor
 | `soclab.contracts` | Canonical Pydantic contracts shared by every component | implemented |
 | `soclab.simulator` | Ten synthetic SOC tools over fixture state with scope isolation and receipts | simulated |
 | `soclab.orchestrator` | Seven-stage bounded investigation, evidence registry, unsupported-claim detection | implemented |
-| `soclab.providers` | Canonical model interface, mock provider, adapters for OpenAI, Azure OpenAI, xAI, OpenAI-compatible, Anthropic, Gemini, Vertex, Ollama, registry | implemented, fixture tested |
+| `soclab.providers` | Canonical model interface, mock provider, adapters for OpenAI, Azure OpenAI, xAI, OpenAI-compatible, Anthropic, Gemini, Vertex, Ollama, HTTP bring-your-own-agent, registry | implemented, fixture tested |
+| `soclab.contracts.agent_v1`, `schemas/agent-v1`, `examples/http_agent` | Versioned `soclab.agent.v1` request and response contract for external agents, published JSON Schema generated from the models, rule-based reference agent | implemented, tested |
 | `soclab.policy` | Rego package, HTTP and subprocess engines, managed OPA server | implemented |
 | `soclab.gateway`, `soclab.grants`, `soclab.executor`, `soclab.approvals` | Control plane, signed grants, isolated execution, human approvals | implemented |
 | `soclab.evidence` | Hash-chained audit store on SQLAlchemy | implemented |

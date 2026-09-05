@@ -1,0 +1,21 @@
+{
+  "contract": "soclab.agent.v1",
+  "proposal": {
+    "tool_calls": [
+      {
+        "name": "get_identity_profile",
+        "arguments": {
+          "user_id": "u-alex-rivera"
+        }
+      }
+    ],
+    "rationale": "The alert names u-alex-rivera. Start with the directory profile.",
+    "confidence": 0.9,
+    "evidence_ids": ["alert"]
+  },
+  "model": "rule-agent-v1",
+  "usage": {
+    "input_tokens": 512,
+    "output_tokens": 40
+  }
+}

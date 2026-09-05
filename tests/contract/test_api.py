@@ -110,6 +110,20 @@ def test_approval_queue(client: TestClient, state: AppState) -> None:
     assert gone.status_code == 404
 
 
+def test_campaign_rejects_unknown_or_unconfigured_provider(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.delenv("SOCLAB_HTTP_AGENT_URL", raising=False)
+    unknown = client.post("/api/v1/campaigns", json={"mode": "baseline", "provider_id": "nonexistent"})
+    assert unknown.status_code == 400 and "unknown provider" in unknown.json()["detail"]
+    unconfigured = client.post("/api/v1/campaigns", json={"mode": "baseline", "provider_id": "http"})
+    assert unconfigured.status_code == 400 and "SOCLAB_HTTP_AGENT_URL" in unconfigured.json()["detail"]
+    assert (
+        client.post("/api/v1/campaigns", json={"mode": "baseline", "provider_id": "Not Valid"}).status_code
+        == 422
+    )
+
+
 def test_protected_campaign_refused_without_policy(
     client: TestClient, monkeypatch: pytest.MonkeyPatch
 ) -> None:

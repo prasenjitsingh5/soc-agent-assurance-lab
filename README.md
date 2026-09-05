@@ -68,7 +68,7 @@ make down
 | Hash-chained evidence store with tamper detection | implemented |
 | Twelve versioned adversarial scenarios, baseline versus protected campaigns | implemented |
 | Five-family scoring, mandatory gates, confidence intervals, authority recommendation | implemented |
-| Provider adapters for eight paths | implemented, contract-tested against recorded fixtures |
+| Provider adapters for eight paths, plus an HTTP path for your own agent | implemented, contract-tested against recorded fixtures; HTTP path tested end to end against the reference agent |
 | OpenInference-style telemetry, MLflow and Phoenix adapters | implemented, optional integration |
 | Executive and technical reports, CLI, versioned API | implemented |
 | Docker Compose profile with OPA, PostgreSQL, Redis | implemented |
@@ -76,6 +76,19 @@ make down
 | Azure reference architecture in Terraform | planned, Phase 3 |
 
 Labels follow [CONTRIBUTING.md](CONTRIBUTING.md): implemented, simulated, tested, optional integration, reference architecture, planned. This project does not claim to be production ready, and [docs/limitations.md](docs/limitations.md) says why.
+
+## Bring your own agent
+
+Any agent behind an HTTP endpoint can be measured the same way. Three variables and the commands above:
+
+```bash
+export SOCLAB_HTTP_AGENT_URL=http://127.0.0.1:8765/v1/agent
+export SOCLAB_HTTP_AGENT_TOKEN=change-me            # optional
+uv run python examples/http_agent/server.py &        # the reference agent, or your own
+uv run soclab compare --provider http --out runs/http
+```
+
+The request and response shapes are published as JSON Schema in `schemas/agent-v1/`. Invalid replies fail closed. See [docs/custom-provider.md](docs/custom-provider.md).
 
 ## Documentation
 
@@ -86,7 +99,7 @@ The rendered site is at https://prasenjitsingh5.github.io/soc-agent-assurance-la
 - [Threat model](docs/threat-model.md)
 - [Evaluation methodology](docs/evaluation-methodology.md)
 - [Policy guide](docs/policy-guide.md)
-- [Provider compatibility](docs/provider-compatibility.md) and [adding a provider](docs/custom-provider.md)
+- [Provider compatibility](docs/provider-compatibility.md) and [bringing your own agent or adding a provider](docs/custom-provider.md)
 - [Demo script](docs/demo-script.md)
 - [Limitations and known risks](docs/limitations.md)
 - [Design specification](docs/specs/2026-09-04-soc-agent-assurance-lab-design.md) and [acceptance checklist](docs/PROJECT-ACCEPTANCE.md)

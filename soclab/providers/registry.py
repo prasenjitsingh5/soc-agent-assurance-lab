@@ -13,7 +13,7 @@ from collections.abc import Callable, Mapping
 from typing import Any
 
 from soclab.contracts import CompatibilityResult, ProviderCapabilities
-from soclab.providers import anthropic_adapter, google_adapter, ollama_adapter, openai_adapter
+from soclab.providers import anthropic_adapter, google_adapter, http_adapter, ollama_adapter, openai_adapter
 from soclab.providers.base import ModelProvider, ProviderError
 from soclab.providers.mock import MockProvider
 
@@ -97,6 +97,21 @@ def _vertex(env: Mapping[str, str], model: str) -> ModelProvider:
 def _ollama(env: Mapping[str, str], model: str) -> ModelProvider:
     return ollama_adapter.OllamaProvider(
         model=model, base_url=env.get("OLLAMA_BASE_URL", "http://localhost:11434")
+    )
+
+
+def _http(env: Mapping[str, str], model: str) -> ModelProvider:
+    raw_timeout = env.get("SOCLAB_HTTP_AGENT_TIMEOUT_SECONDS")
+    try:
+        timeout = float(raw_timeout) if raw_timeout else http_adapter.DEFAULT_TIMEOUT_SECONDS
+    except ValueError as exc:
+        msg = f"SOCLAB_HTTP_AGENT_TIMEOUT_SECONDS must be a number, got {raw_timeout!r}"
+        raise ProviderError(msg) from exc
+    return http_adapter.HttpAgentProvider(
+        url=env.get("SOCLAB_HTTP_AGENT_URL", ""),
+        model=model,
+        token=env.get("SOCLAB_HTTP_AGENT_TOKEN"),
+        timeout_seconds=timeout,
     )
 
 
@@ -197,6 +212,17 @@ ENTRIES: dict[str, ProviderEntry] = {
             default_model="default",
             factory=_compatible,
             tested="gateway path for LiteLLM, vLLM and OpenRouter; fixture tested via the OpenAI adapter",
+        ),
+        ProviderEntry(
+            provider_id="http",
+            adapter_version=http_adapter.ADAPTER_VERSION,
+            capabilities=ProviderCapabilities(
+                tool_calling=True, structured_output=True, streaming=False, usage_reporting=False
+            ),
+            required_env=("SOCLAB_HTTP_AGENT_URL",),
+            default_model="agent",
+            factory=_http,
+            tested="contract tests against fixtures and an end-to-end run against the reference agent",
         ),
     )
 }

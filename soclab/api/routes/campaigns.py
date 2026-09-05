@@ -19,6 +19,8 @@ from soclab.policy import (
     PolicyUnavailableError,
     find_opa_binary,
 )
+from soclab.providers.base import ProviderError
+from soclab.providers.registry import ProviderRegistry
 from soclab.reports import comparison_table
 from soclab.scoring import score_campaign
 
@@ -30,6 +32,21 @@ class CampaignRequest(BaseModel):
     authority_level: AuthorityLevel = AuthorityLevel.L4_ACT_WITH_APPROVAL
     scenario_ids: list[str] | None = None
     repeats: int = Field(default=1, ge=1, le=10)
+    provider_id: str = Field(default="mock", pattern=r"^[a-z][a-z0-9_]*$")
+    model: str | None = Field(default=None, min_length=1, max_length=200)
+
+
+def _resolve_model(provider_id: str, model: str | None) -> str:
+    """Check the provider id against the registry before any run starts. Unknown or unconfigured is a 400."""
+    registry = ProviderRegistry()
+    try:
+        entry = registry.entry(provider_id)
+    except ProviderError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    if not registry.configured(provider_id):
+        detail = f"provider {provider_id!r} is not configured; set {', '.join(entry.required_env)}"
+        raise HTTPException(status_code=400, detail=detail)
+    return model or entry.default_model
 
 
 def _engine(state_url: str | None) -> tuple[PolicyEngine, ManagedOpaServer | None]:
@@ -53,11 +70,15 @@ def list_scenarios() -> list[dict[str, Any]]:
 
 @router.post("/campaigns", status_code=201)
 async def create_campaign(body: CampaignRequest, state: State) -> dict[str, Any]:
+    model = _resolve_model(body.provider_id, body.model)
     config = CampaignConfig(
         mode=body.mode,
         authority_level=body.authority_level,
         scenario_ids=tuple(body.scenario_ids) if body.scenario_ids else None,
         repeats=body.repeats,
+        provider_id=body.provider_id,
+        model=model,
+        approved_models=((body.provider_id, model),),
     )
     server: ManagedOpaServer | None = None
     engine: PolicyEngine | None = None

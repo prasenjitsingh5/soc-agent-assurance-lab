@@ -41,7 +41,11 @@ class ToolCall(StrictModel):
 
 
 class ModelRequest(StrictModel):
-    """Everything a provider needs for one turn. Stage names let deterministic providers script replies."""
+    """Everything a provider needs for one turn. Stage names let deterministic providers script replies.
+
+    The orchestrator sets the run, trace and incident identifiers so an adapter that
+    talks to an external agent can correlate turns. Vendor adapters ignore them.
+    """
 
     stage: str = Field(pattern=r"^[a-z][a-z0-9_]*$")
     system_prompt: str
@@ -50,6 +54,9 @@ class ModelRequest(StrictModel):
     response_schema: dict[str, Any] | None = None
     max_output_tokens: int = Field(default=1024, ge=1)
     temperature: float = Field(default=0.0, ge=0.0, le=2.0)
+    run_id: str | None = None
+    trace_id: str | None = None
+    incident_id: str | None = None
 
 
 class ModelResponse(StrictModel):
