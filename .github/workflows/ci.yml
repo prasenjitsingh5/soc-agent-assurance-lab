@@ -39,8 +39,7 @@ jobs:
       - name: Test
         run: uv run pytest --cov --cov-report=term-missing --cov-report=xml
       - name: Policy tests
-        run: |
-          if [ -d policies/rego ]; then opa test policies/rego -v; else echo "no policies yet"; fi
+        run: opa test soclab/data/policies -v
       - name: Security scan
         run: |
           uv run bandit -q -r soclab -c pyproject.toml
@@ -51,3 +50,28 @@ jobs:
           docker compose -f infrastructure/docker/docker-compose.yml config --quiet
       - name: Build API image
         run: docker build -f infrastructure/docker/api.Dockerfile -t soclab/api:ci .
+
+  package:
+    # The wheel must run the demo from any directory with nothing from the checkout.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
+      - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d  # v10.0.1
+        with:
+          version: "0.12.9"
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7
+        with:
+          python-version: "3.12"
+      - name: Build
+        run: uv build
+      - name: Install the wheel into a clean environment and run it elsewhere
+        run: |
+          uv venv "$RUNNER_TEMP/wheel-venv"
+          uv pip install --python "$RUNNER_TEMP/wheel-venv/bin/python" dist/*.whl
+          cd "$RUNNER_TEMP"
+          "$RUNNER_TEMP/wheel-venv/bin/soclab" version
+          "$RUNNER_TEMP/wheel-venv/bin/soclab" scenarios
+          "$RUNNER_TEMP/wheel-venv/bin/soclab" demo --help
+          "$RUNNER_TEMP/wheel-venv/bin/soclab" opa install
+          "$RUNNER_TEMP/wheel-venv/bin/soclab" demo
+          test -f runs/demo/executive.html

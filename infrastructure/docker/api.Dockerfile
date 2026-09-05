@@ -5,10 +5,9 @@ FROM python:3.12.14-slim-bookworm AS build
 COPY --from=ghcr.io/astral-sh/uv:0.12.9 /uv /usr/local/bin/uv
 WORKDIR /app
 ENV UV_LINK_MODE=copy UV_COMPILE_BYTECODE=1 UV_PYTHON_DOWNLOADS=never
-COPY pyproject.toml uv.lock README.md ./
+COPY pyproject.toml uv.lock README.md LICENSE NOTICE ./
+# Scenarios and the Rego policy are package data under soclab/data, so the installed package is complete.
 COPY soclab ./soclab
-COPY policies ./policies
-COPY scenarios ./scenarios
 RUN uv sync --locked --no-dev --no-editable --extra docker
 
 FROM python:3.12.14-slim-bookworm AS runtime
@@ -17,9 +16,7 @@ RUN apt-get update && apt-get upgrade -y --no-install-recommends && rm -rf /var/
 RUN groupadd --system soclab && useradd --system --gid soclab --uid 10001 --home /app soclab
 WORKDIR /app
 COPY --from=build --chown=soclab:soclab /app/.venv /app/.venv
-COPY --from=build --chown=soclab:soclab /app/policies /app/policies
-COPY --from=build --chown=soclab:soclab /app/scenarios /app/scenarios
-ENV PATH="/app/.venv/bin:$PATH" PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1     SOCLAB_SCENARIO_DIR=/app/scenarios SOCLAB_POLICY_DIR=/app/policies/rego
+ENV PATH="/app/.venv/bin:$PATH" PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 RUN mkdir -p /app/runs && chown soclab:soclab /app/runs
 USER soclab
 EXPOSE 8000

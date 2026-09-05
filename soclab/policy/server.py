@@ -18,7 +18,8 @@ from types import TracebackType
 
 import httpx
 
-from soclab.policy.client import POLICY_DIR, OpaHttpPolicyEngine, PolicyUnavailableError, find_opa_binary
+from soclab.policy.client import OPA_NOT_FOUND, POLICY_DIR, OpaHttpPolicyEngine, PolicyUnavailableError
+from soclab.policy.opa_binary import find_opa_binary
 
 
 def _free_port() -> int:
@@ -36,8 +37,7 @@ class ManagedOpaServer:
     ) -> None:
         resolved = binary or find_opa_binary()
         if resolved is None:
-            msg = "opa binary not found; set SOCLAB_OPA_BIN or place it in tools/"
-            raise PolicyUnavailableError(msg)
+            raise PolicyUnavailableError(OPA_NOT_FOUND)
         self._binary = resolved
         self._policy_dir = policy_dir
         self._timeout = startup_timeout
