@@ -38,6 +38,9 @@ REQUIRED_FILES = [
     ".github/dependabot.yml",
     ".github/PULL_REQUEST_TEMPLATE.md",
     ".github/ISSUE_TEMPLATE/bug_report.yml",
+    ".github/ISSUE_TEMPLATE/scenario_or_control.yml",
+    ".github/ISSUE_TEMPLATE/config.yml",
+    ".github/CODEOWNERS",
     "docs/architecture.md",
     "docs/engineering-standards.md",
     "docs/threat-model.md",
@@ -51,6 +54,10 @@ REQUIRED_FILES = [
     "docs/THIRD-PARTY-NOTICES.md",
     "docs/PROJECT-ACCEPTANCE.md",
     "docs/adr/0001-single-python-package.md",
+    "docs/adr/0002-phased-delivery.md",
+    "docs/adr/0003-signed-execution-grants.md",
+    "docs/adr/0004-oracles-are-named-predicates.md",
+    "docs/adr/0005-docker-profile-boundaries.md",
     "docs/adr/0006-bundled-runtime-data.md",
     "soclab/data/policies/soc_authorization.rego",
     "soclab/data/scenarios/incidents/identity-compromise.yaml",
@@ -107,6 +114,24 @@ def test_no_unsupported_claims(doc: str) -> None:
             assert any(word in context for word in ("avoid", "not ", "never", "no claim")), (
                 f"{doc}: {context!r}"
             )
+
+
+def test_every_adr_is_referenced() -> None:
+    adrs = sorted((REPO / "docs" / "adr").glob("[0-9][0-9][0-9][0-9]-*.md"))
+    assert adrs, "docs/adr holds no ADRs"
+    for adr in adrs:
+        sources = [REPO / "docs" / "architecture.md", *(other for other in adrs if other != adr)]
+        assert any(adr.name in source.read_text(encoding="utf-8") for source in sources), (
+            f"{adr.name} is not referenced from docs/architecture.md or another ADR"
+        )
+
+
+def test_issue_forms_route_security_reports_privately() -> None:
+    config = yaml.safe_load((REPO / ".github/ISSUE_TEMPLATE/config.yml").read_text(encoding="utf-8"))
+    assert config["blank_issues_enabled"] is False
+    links = {link["name"]: link["url"] for link in config["contact_links"]}
+    assert links["Report a security vulnerability"].endswith("/security/advisories/new")
+    assert any(url.endswith("/discussions") for url in links.values())
 
 
 def test_documented_make_targets_exist() -> None:
