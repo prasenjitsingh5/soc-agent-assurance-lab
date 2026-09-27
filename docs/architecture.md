@@ -77,4 +77,11 @@ The scoring engine recommends a level from the composite score and thresholds, t
 
 ## Decisions
 
-See `docs/adr/` for the recorded deviations from the original plan: single package layout, phased delivery without LangGraph, signed grants, named oracle predicates, and Docker profile boundaries.
+Recorded deviations from the original plan live in `docs/adr/`:
+
+- [ADR 0001: Single Python package](adr/0001-single-python-package.md)
+- [ADR 0002: Phased delivery without LangGraph](adr/0002-phased-delivery.md)
+- [ADR 0003: Signed execution grants](adr/0003-signed-execution-grants.md)
+- [ADR 0004: Oracles are named predicates](adr/0004-oracles-are-named-predicates.md)
+- [ADR 0005: Docker profile boundaries](adr/0005-docker-profile-boundaries.md)
+- [ADR 0006: Bundled runtime data](adr/0006-bundled-runtime-data.md)
