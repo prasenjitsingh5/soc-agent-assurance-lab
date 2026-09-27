@@ -316,17 +316,21 @@ def opa_path() -> None:
 def verify_chain(
     run_id: Annotated[str | None, typer.Argument(help="Run id; omit to verify every run")] = None,
     database_url: Annotated[str | None, typer.Option()] = None,
+    as_json: Annotated[
+        bool, typer.Option("--json", help="Print a JSON array of chain verifications and nothing else")
+    ] = False,
 ) -> None:
     """Verify the hash chain of one run or every run in the evidence store."""
     repository = _repository(database_url)
     ids = [UUID(run_id)] if run_id else repository.run_ids()
-    bad = 0
-    for rid in ids:
-        v = repository.verify_chain(rid)
-        status = "valid" if v.valid else f"INVALID at sequence {v.first_invalid_sequence} ({v.reason})"
-        typer.echo(f"{rid} {v.length:>4} events {status} root={v.root_hash}")
-        bad += 0 if v.valid else 1
-    if bad:
+    results = [repository.verify_chain(rid) for rid in ids]
+    if as_json:
+        typer.echo(json.dumps([v.model_dump(mode="json") for v in results], indent=2))
+    else:
+        for v in results:
+            status = "valid" if v.valid else f"INVALID at sequence {v.first_invalid_sequence} ({v.reason})"
+            typer.echo(f"{v.run_id} {v.length:>4} events {status} root={v.root_hash}")
+    if any(not v.valid for v in results):
         raise typer.Exit(code=1)
 
 
