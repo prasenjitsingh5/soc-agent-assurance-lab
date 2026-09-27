@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/prasenjitsingh5/soc-agent-assurance-lab/security/advisories/new
+    about: Report security findings privately, as SECURITY.md asks. Do not open a public issue.
+  - name: Ask a question
+    url: https://github.com/prasenjitsingh5/soc-agent-assurance-lab/discussions
+    about: Questions, ideas and results belong in GitHub Discussions.
