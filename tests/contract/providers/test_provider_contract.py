@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -342,3 +343,13 @@ def test_mock_stream_is_an_explicit_capability_gap() -> None:
     assert provider.describe_capabilities().streaming is False
     with pytest.raises(CapabilityUnsupportedError):
         provider.stream(request())
+
+
+# ----------------------------------------------------------------- documented defaults
+def test_ollama_default_model_matches_the_live_validated_model() -> None:
+    doc = Path(__file__).resolve().parents[3] / "docs" / "provider-compatibility.md"
+    lines = doc.read_text(encoding="utf-8").splitlines()
+    row = next(line for line in lines if line.startswith("| ollama |"))
+    match = re.search(r"live-validated \(([^,]+),", row)
+    assert match is not None, "the ollama row must name its live-validated model"
+    assert ENTRIES["ollama"].default_model == match.group(1)
