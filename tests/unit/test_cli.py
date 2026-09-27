@@ -1,13 +1,17 @@
 import hashlib
+import json
 import re
 from collections.abc import Callable
 from pathlib import Path
+from uuid import UUID
 
 import pytest
+from sqlalchemy import create_engine
 from typer.testing import CliRunner
 
 from soclab import __version__
 from soclab.cli import app
+from soclab.evidence import EvidenceRepository
 from soclab.policy import OPA_VERSION, cached_opa_path, find_opa_binary, opa_asset
 from soclab.policy import opa_binary as opa_module
 from soclab.reports import PDF_EXTRA_HINT
@@ -52,6 +56,43 @@ def test_baseline_investigation_and_campaign(tmp_path: Path) -> None:
     assert (out / "baseline-executive.html").exists()
     verify = runner.invoke(app, ["verify-chain", "--database-url", db])
     assert verify.exit_code == 0 and "valid" in verify.output
+
+
+def test_verify_chain_json_reports_valid_and_tampered_chains(tmp_path: Path) -> None:
+    db = f"sqlite+pysqlite:///{tmp_path / 'e.sqlite'}"
+    campaign = runner.invoke(
+        app,
+        [
+            "campaign",
+            "--mode",
+            "baseline",
+            "--scenario",
+            "ATK-001",
+            "--out",
+            str(tmp_path / "reports"),
+            "--database-url",
+            db,
+        ],
+    )
+    assert campaign.exit_code == 0, campaign.output
+    clean = runner.invoke(app, ["verify-chain", "--json", "--database-url", db])
+    assert clean.exit_code == 0, clean.output
+    chains = json.loads(clean.stdout)
+    assert chains and all(chain["valid"] for chain in chains)
+    assert set(chains[0]) == {"run_id", "valid", "length", "root_hash", "first_invalid_sequence", "reason"}
+    victim = chains[0]["run_id"]
+    engine = create_engine(db)
+    try:
+        EvidenceRepository(db, engine=engine).unsafe_modify_for_test(
+            UUID(victim), sequence=2, field="tampered", value=True
+        )
+    finally:
+        engine.dispose()
+    tampered = runner.invoke(app, ["verify-chain", "--json", "--database-url", db])
+    assert tampered.exit_code == 1
+    report = {chain["run_id"]: chain for chain in json.loads(tampered.stdout)}
+    assert report[victim]["valid"] is False
+    assert report[victim]["first_invalid_sequence"] == 2
 
 
 @pytest.mark.policy
