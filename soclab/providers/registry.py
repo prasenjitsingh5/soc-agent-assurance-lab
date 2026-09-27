@@ -198,7 +198,7 @@ ENTRIES: dict[str, ProviderEntry] = {
                 tool_calling=True, structured_output=True, streaming=True, usage_reporting=True
             ),
             required_env=(),
-            default_model="llama3.1",
+            default_model="llama3.2:3b",
             factory=_ollama,
             tested="contract tests against recorded fixtures",
         ),
