@@ -66,7 +66,7 @@ Open `runs/demo/executive.html`. The baseline reports under the `baseline-` pref
 uv run soclab verify-chain
 ```
 
-Every run prints its length, validity and root hash. Those root hashes appear in the report you just opened.
+Every run prints its length, validity and root hash. Those root hashes appear in the report you just opened. Add `--json` to get the same results as a JSON array for CI jobs and audit scripts.
 
 ## 5. Tamper and watch it fail (one minute)
 
