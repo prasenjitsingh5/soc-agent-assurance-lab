@@ -30,7 +30,7 @@ dependencies = [
     "SQLAlchemy==2.0.52",
     "Jinja2==3.1.6",
     "typer==0.27.2",
-    "uvicorn[standard]==0.53.0",
+    "uvicorn[standard]==0.54.0",
 ]
 
 [project.optional-dependencies]
@@ -38,11 +38,11 @@ dev = [
     "pytest==9.1.1",
     "pytest-asyncio==1.4.0",
     "pytest-cov==7.1.0",
-    "ruff==0.16.8",
+    "ruff==0.16.9",
     "mypy==2.3.1",
     "types-PyYAML==6.0.12.20260815",
     "types-reportlab==5.0.0.20260911",
-    "httpx2==2.13.0",
+    "httpx2==2.13.1",
 ]
 security = [
     "bandit==1.9.4",
